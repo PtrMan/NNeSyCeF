@@ -283,8 +283,13 @@ class Reasoner(object):
 					## TODO< should this policy be another one instead? >
 					sdrsOverlap = a.sdr == b.sdr
 
+					# TODO< check evidence overlap
+					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
+					#     >
+
 					# TODO< take time distance into account 
 					#     patham9: FIFO revision should happen up to a certain max. amount of time distance between the events.
+					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
 					# >
 					return sdrsOverlap
 
