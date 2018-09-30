@@ -10,7 +10,7 @@ seed()
 
 # TODO< sort concepts >
 
-# TODO< feedback of priority after derivation >
+# TODO< feedback of priority after derivation in the attention system >
 
 # TODO< fix permutation issue patrick for sequences was describing with 
 #       Perm1(a) xor (Perm2(b) xor c)
