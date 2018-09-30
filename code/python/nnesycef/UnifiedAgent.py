@@ -8,13 +8,10 @@ from SequenceMemory import *
 # initialize random number generator
 seed()
 
-# TODO< call   revision >
 
 # TODO< debug for NARS inference with human readable representation of SDR's >
 
 # TODO< feedback of priority after derivation >
-
-# TODO< check if stamps work correctly - we need unittests and a message >
 
 # TODO< fix permutation issue patrick for sequences was describing with 
 #       Perm1(a) xor (Perm2(b) xor c)
@@ -29,11 +26,15 @@ seed()
 
 # TODO< use concepts for pre and post condition decision making >
 
+# TODO< check if stamps work correctly - we need unittests and a message >
+
 # TODO< unittest permutations >
 
 # TODO< implement all rules 
 #       #term-based detachment (deduction) step: a ==> b, b |- a
 #
+
+# TODO< test   revision >
 
 # TODO LONGTERM< tinker with attention subsystem and try various (automated) experiments >
 
@@ -253,6 +254,12 @@ class Reasoner(object):
 
 			# temporal induction between all events in FIFO and occuredEvent
 			for iEventBelief in receiverConcept.eventBeliefs:
+				# checks if REVISION has to be done between Belief(Task)
+				def checkIsRevisable(a, b):
+					## for now we just revise if the SDR's are exactly the same
+					## TODO< should this policy be another one instead? >
+					return a.sdr == b.sdr
+
 				if iEventBelief.sdr == occuredEvent.sdr:
 					# because it can't do inference with itself
 					continue
@@ -265,13 +272,56 @@ class Reasoner(object):
 				# this is required for DECISION MAKING
 				# (we have here the only oportunity to do this)
 				#
-				## TODO< call helper which maintains FIFO or add class FIFO >
 				## TODO< REVISION with existing ones if possible >
 
-				conceptForOccuredEvent.beliefsPrecondition.append(iEventBelief)
-				receiverConcept.beliefsPostcondition.append(occuredEvent)
+				# we check for oportunities to apply REVISION with existing ones with the same content
+				wasRevised = False
+				for iBeliefIdx in range(0, len(conceptForOccuredEvent.beliefsPrecondition)):
+					iBelief = conceptForOccuredEvent.beliefsPrecondition[iBeliefIdx]
 
-				# TODO< do we need to active some concepts here - I thnk so >
+					if checkIsRevisable(iEventBelief, iBelief):
+						revisedBelief = NarsInference.eventRevision(iEventBelief, iBelief)
+
+						## ASK< is this fine here >
+						self._tryAddDerivedTask(revisedBelief, "event revision")
+
+						## replace with revised one
+						conceptForOccuredEvent.beliefsPrecondition[iBeliefIdx] = revisedBelief
+
+						wasRevised = True
+
+						## we don't need to check any others for revision
+						break
+
+				if not wasRevised:
+					conceptForOccuredEvent.beliefsPrecondition.append(iEventBelief)
+				
+
+
+
+				# we check for oportunities to apply REVISION with existing ones with the same content
+				wasRevised = False
+				for iBeliefIdx in range(0, len(receiverConcept.beliefsPostcondition)):
+					iBelief = receiverConcept.beliefsPostcondition[iBeliefIdx]
+
+					if checkIsRevisable(occuredEvent, iBelief):
+						revisedBelief = NarsInference.eventRevision(occuredEvent, iBelief)
+
+						## ASK< is this fine here >
+						self._tryAddDerivedTask(revisedBelief, "event revision")
+
+						## replace with revised one
+						receiverConcept.beliefsPostcondition[iBeliefIdx] = revisedBelief
+
+						wasRevised = True
+
+						## we don't need to check any others for revision
+						break
+
+				if not wasRevised:
+					receiverConcept.beliefsPostcondition.append(occuredEvent)
+
+				# TODO< do we need to active some concepts here - I think so >
 
 			# derive event intersections
 			for iEventBelief in receiverConcept.eventBeliefs:
