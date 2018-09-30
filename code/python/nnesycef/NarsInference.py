@@ -23,7 +23,7 @@ def eventAbduction(compoundTask, componentTask):
     resultTask.attention = AttentionValue()
 
     ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event ABDUCTION   {{{}, {}!}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+    print("[t] event ABDUCTION   {{{}., {}!}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
 
     return resultTask
 
@@ -46,7 +46,7 @@ def eventDeduction(compound, componentTask):
     resultTask.attention = AttentionValue()
 
     ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event DEDUCTION   {{{}, {}.}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+    print("[t] event DEDUCTION   {{{}., {}.}} |- {}.".format(compound.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.retHumanReadableId()))
 
     return resultTask
 
@@ -65,7 +65,7 @@ def eventIntersection(conditional, predicted):
     resultTask.attention = AttentionValue()
 
     ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event INTERSECTION   {{{}, {}!}} |- {}!".format(conditional.retHumanReadableId(), predicted.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+    print("[t] event INTERSECTION   {{{}., {}.}} |- {}.".format(conditional.retHumanReadableId(), predicted.retHumanReadableId(), resultTask.retHumanReadableId()))
 
 
     return resultTask
@@ -92,7 +92,7 @@ def eventRevision(a, b):
 
 
     ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event REVISION   {{{}, {}!}} |- {}!".format(a.retHumanReadableId(), b.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+    print("[t] event REVISION   {{{}., {}.}} |- {}.".format(a.retHumanReadableId(), b.retHumanReadableId(), resultTask.retHumanReadableId()))
 
 
     return resultTask
