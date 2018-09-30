@@ -22,8 +22,9 @@ def eventAbduction(compoundTask, componentTask):
     resultTask.truth = TruthValue.abduction(compoundTask.truth, componentTask.truth)
     resultTask.attention = AttentionValue()
 
-    ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event ABDUCTION   {{{}., {}!}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+    if DEBUG:
+        ## TODO< used debug cookie of name of SDR if possible >
+        print("[t] event ABDUCTION   {{{}., {}!}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
 
     return resultTask
 
@@ -45,8 +46,9 @@ def eventDeduction(compound, componentTask):
     resultTask.truth = TruthValue.deduction(compound.truth, componentTask.truth)
     resultTask.attention = AttentionValue()
 
-    ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event DEDUCTION   {{{}., {}.}} |- {}.".format(compound.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.retHumanReadableId()))
+    if DEBUG:
+        ## TODO< used debug cookie of name of SDR if possible >
+        print("[t] event DEDUCTION   {{{}., {}.}} |- {}.".format(compound.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.retHumanReadableId()))
 
     return resultTask
 
@@ -64,8 +66,9 @@ def eventIntersection(conditional, predicted):
     resultTask.truth = TruthValue.intersection(conditional.truth, predicted.truth)
     resultTask.attention = AttentionValue()
 
-    ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event INTERSECTION   {{{}., {}.}} |- {}.".format(conditional.retHumanReadableId(), predicted.retHumanReadableId(), resultTask.retHumanReadableId()))
+    if DEBUG:
+        ## TODO< used debug cookie of name of SDR if possible >
+        print("[t] event INTERSECTION   {{{}., {}.}} |- {}.".format(conditional.retHumanReadableId(), predicted.retHumanReadableId(), resultTask.retHumanReadableId()))
 
 
     return resultTask
@@ -90,9 +93,9 @@ def eventRevision(a, b):
     # TODO< how to calculate the attention value? >
     resultTask.attention = AttentionValue()
 
-
-    ## TODO< used debug cookie of name of SDR if possible >
-    print("[t] event REVISION   {{{}., {}.}} |- {}.".format(a.retHumanReadableId(), b.retHumanReadableId(), resultTask.retHumanReadableId()))
+    if DEBUG:
+        ## TODO< used debug cookie of name of SDR if possible >
+        print("[t] event REVISION   {{{}., {}.}} |- {}.".format(a.retHumanReadableId(), b.retHumanReadableId(), resultTask.retHumanReadableId()))
 
 
     return resultTask
