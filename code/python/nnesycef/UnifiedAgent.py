@@ -269,10 +269,7 @@ class Reasoner(object):
 
 			Debug.msg("d", 0, "eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
 
-			print(receiverConcept.eventBeliefs._arr)
-
 			for iEventBelief in receiverConcept.eventBeliefs:
-				print(iEventBelief)
 				Debug.msg("d", 0, "  eventBelief.sdr=" + iEventBelief.retHumanReadableId())
 
 			# temporal induction between all events in FIFO and occuredEvent
@@ -486,12 +483,13 @@ while True:
 
 	reasoner._thisCycleEventTasks.append(eventTask)
 
+	if True:
+		print("")
+		print("")
+		print("")
+		print("")
+		print("")
 
-	print("")
-	print("")
-	print("")
-	print("")
-	print("")
 	Debug.msg("i", 0, "cycle")
 	reasoner.cycle()
 
@@ -502,7 +500,7 @@ while True:
 	elapsed_time = time.process_time() - t
 
 	if (cycleCounter % 1) == 0:
-		if False:
+		if True:
 			print(elapsed_time)
 
 	cycleCounter += 1
