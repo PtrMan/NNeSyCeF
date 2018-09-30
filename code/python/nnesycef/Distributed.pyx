@@ -12,7 +12,7 @@ def distanceAbs(a, b):
 	return d
 
 # optimization of similarity
-cdef int similarity_(int[:] a, int[:] b):
+cdef int similarity_(unsigned char[:] a, unsigned char[:] b):
 	BITS = 2048
 
 	d = 0
@@ -29,12 +29,12 @@ def similarity(a, b):
 	return float(d) / (DISTRIBUTED_BITS * DISTRIBUTED_RATIO)
 
 def genNull():
-	return [0] * DISTRIBUTED_BITS
+	return bytearray(DISTRIBUTED_BITS)
 
 def union(a, b):
 	l = len(a)
 
-	res = [0] * DISTRIBUTED_BITS
+	res = bytearray(DISTRIBUTED_BITS)
 	for i in range(0, l):
 		res[i] = a[i] | b[i]
 	return res
@@ -42,24 +42,22 @@ def union(a, b):
 def xor_(a, b):
 	l = len(a)
 
-	res = [0] * DISTRIBUTED_BITS
+	res = bytearray(DISTRIBUTED_BITS)
 	for i in range(0, l):
 		res[i] = a[i] ^ b[i]
 	return res
-
-#cdef _minus(int[:] a, int[:] b, int[:]res):
 
 
 def minus(a, b):
 	l = len(a)
 
-	res = [0] * DISTRIBUTED_BITS
+	res = bytearray(DISTRIBUTED_BITS)
 	for i in range(0, l):
 		res[i] = a[i] and (not b[i])
 	return res
 
 def genRandom():
-	res = [0] * DISTRIBUTED_BITS
+	res = bytearray(DISTRIBUTED_BITS)
 
 	for i in range(0, int(DISTRIBUTED_BITS * DISTRIBUTED_RATIO)):
 		idx = random.randint(0, DISTRIBUTED_BITS-1)
@@ -105,7 +103,7 @@ while len(permutation2) > 0:
 del permutation2
 
 def permutate(v):
-	result = [0] * DISTRIBUTED_BITS
+	result = bytearray(DISTRIBUTED_BITS)
 
 	for idxV in range(0, DISTRIBUTED_BITS-1):
 		idx = permutation[idxV]
@@ -114,7 +112,7 @@ def permutate(v):
 	return result
 
 def invPermutate(v):
-	result = [0] * DISTRIBUTED_BITS
+	result = bytearray(DISTRIBUTED_BITS)
 
 	for idxV in range(0, DISTRIBUTED_BITS-1):
 		idx = invPermutation[idxV]
@@ -130,7 +128,7 @@ def invPermutate(v):
 def genSdrByIntId(id_):
 	id2 = id_
 
-	res = [0] * DISTRIBUTED_BITS
+	res = bytearray(DISTRIBUTED_BITS)
 
 	idx2 = 1503495
 
