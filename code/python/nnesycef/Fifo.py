@@ -15,6 +15,9 @@ class Fifo(object):
         result = self._arr[0]
         self._arr = self._arr[1:]
 
+    def __getitem__(self, idx):
+        return self._arr[idx]
+
     def __len__(self):
         return len(self._arr)
 
