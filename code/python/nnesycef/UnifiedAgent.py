@@ -10,6 +10,9 @@ seed()
 
 # TODO< sort concepts >
 
+# TODO< add time >
+# TODO< add time of events/tasks >
+
 # TODO< feedback of priority after derivation in the attention system >
 
 # TODO< fix permutation issue patrick for sequences was describing with 
@@ -275,7 +278,12 @@ class Reasoner(object):
 				def checkIsRevisable(a, b):
 					## for now we just revise if the SDR's are exactly the same
 					## TODO< should this policy be another one instead? >
-					return a.sdr == b.sdr
+					sdrsOverlap = a.sdr == b.sdr
+
+					# TODO< take time distance into account 
+					#     patham9: FIFO revision should happen up to a certain max. amount of time distance between the events.
+					# >
+					return sdrsOverlap
 
 				print("[d2] considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
