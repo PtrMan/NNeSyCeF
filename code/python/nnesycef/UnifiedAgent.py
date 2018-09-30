@@ -244,7 +244,6 @@ class Reasoner(object):
 		def processEventForTemporalInference(receiverConcept, occuredEvent):
 			assert isinstance(receiverConcept, Concept)
 			assert isinstance(occuredEvent, Task)
-			#assert isinstance(conceptForOccuredEvent, Concept)
 
 			## fetch concept for occuredEvent
 			conceptForOccuredEvent = fetchConceptBySdr(occuredEvent.sdr)
@@ -406,6 +405,7 @@ class Reasoner(object):
 
 
 	# generates a new concept and adds it to memory
+	# /param belief belief task which has to be conceptualized
 	def _conceptualize(self, belief):
 		print("[d] conceptualize belief task sdr = %s" % belief.retHumanReadableId())
 
