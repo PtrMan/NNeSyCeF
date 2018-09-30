@@ -84,10 +84,13 @@ def eventRevision(a, b):
     assert isinstance(a, Task)
     assert isinstance(b, Task)
 
+    ## revision doesn't make any sense if the SDR's don't match
+    assert a.sdr == b.sdr
+
     resultTaskStamp = Stamp.merge(a.stamp, b.stamp)
     resultTask = Task(Task.ENUMTYPE_JUDGEMENT, resultTaskStamp)
 
-    resultTask.sdr = genRandom() # create new SDR
+    resultTask.sdr = a.sdr
     resultTask.identifyingSdr = resultTask.sdr # we do this because they are the same for NARS tasks!
     resultTask.truth = TruthValue.revision(a.truth, b.truth)
     # TODO< how to calculate the attention value? >
