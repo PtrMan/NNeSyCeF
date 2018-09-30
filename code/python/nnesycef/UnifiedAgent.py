@@ -242,6 +242,17 @@ class Reasoner(object):
 		## receiverConcept is Concept
 		## occuredEvent is Task
 		def processEventForTemporalInference(receiverConcept, occuredEvent):
+			# called when a task was derived
+			# TODO< rename to derive and add a argument to the function which s used for derivation > 
+
+			def derived(derivedTask, origin):
+				## because we need to add it to the system
+				self._tryAddDerivedTask(derivedTask, origin)
+
+				## because we need to boost the attention of the assiciated concepts
+				self._temporalAttentionSystem.boostAttentionByDerivedTask(derivedTask)
+
+
 			assert isinstance(receiverConcept, Concept)
 			assert isinstance(occuredEvent, Task)
 
@@ -278,13 +289,13 @@ class Reasoner(object):
 
 				derivedTask = NarsInference.eventDeduction(iEventBelief, occuredEvent)
 				
-				self._tryAddDerivedTask(derivedTask, "event deduction")
+				derived(derivedTask, "event deduction")
 
 				# add derived task to pre and post conditions of premises
 				# this is required for DECISION MAKING
 				# (we have here the only oportunity to do this)
 				#
-				## TODO< REVISION with existing ones if possible >
+				## TODO< refactor iteration over fifo and adding into function because it is done twice >
 
 				# we check for oportunities to apply REVISION with existing ones with the same content
 				wasRevised = False
@@ -295,7 +306,7 @@ class Reasoner(object):
 						revisedBelief = NarsInference.eventRevision(iEventBelief, iBelief)
 
 						## ASK< is this fine here >
-						self._tryAddDerivedTask(revisedBelief, "event revision")
+						derived(revisedBelief, "event revision")
 
 						## replace with revised one
 						conceptForOccuredEvent.beliefsPrecondition[iBeliefIdx] = revisedBelief
@@ -320,7 +331,7 @@ class Reasoner(object):
 						revisedBelief = NarsInference.eventRevision(occuredEvent, iBelief)
 
 						## ASK< is this fine here >
-						self._tryAddDerivedTask(revisedBelief, "event revision")
+						derived(revisedBelief, "event revision")
 
 						## replace with revised one
 						receiverConcept.beliefsPostcondition[iBeliefIdx] = revisedBelief
@@ -349,7 +360,7 @@ class Reasoner(object):
 
 				derivedTask = NarsInference.eventIntersection(iEventBelief, occuredEvent)
 				
-				self._tryAddDerivedTask(derivedTask, "event intersection")
+				derived(derivedTask, "event intersection")
 
 				# TODO< do we need to active some concepts here - I thnk so >
 

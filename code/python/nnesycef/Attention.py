@@ -140,6 +140,13 @@ class AttentionSystem(object):
 		## tasks which didn't fall out stay in queue
 		self._level0._queue = [i[1] for i in sortedQueuedTasksWithMeasure]
 
+	# boosts all other associated concepts which have something in common with task
+	def boostAttentionByDerivedTask(self, task):
+		assert self.type_ == AttentionSystem.TYPE_TEMPORAL, "boostAttentionByDerivedTask() must not get called for the (declarative) attention-buffer"
+
+		# TODO< ask team how this should be done >
+		pass
+
 	# does a timestep for something which has a attentionValue
 	def stepForTask(self, attentionValue):
 		## tasks may have no attention value because they are non-NARS tasks
