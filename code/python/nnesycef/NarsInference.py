@@ -3,11 +3,15 @@ from Task import *
 from Stamp import *
 from Attention import AttentionValue
 
+DEBUG = False
+
 # see https://github.com/patham9/ANSNA/blob/e4f8c9879013754467ff149172b9eb10aa988bbf/src/Inference.c#L94
-# {Event task a!, Precondition belief <a =/> b>.} |- Derived event task b!
+#    {Event task a!, Precondition belief <a =/> b>.}
+# |-
+#    Derived event task b!
 #
 # /param compoundTask is some object with sdr,truth,stamp
-# /param componentTask is SDR or anything compatible
+# /param componentTask is some object with sdr,truth,stamp
 def eventAbduction(compoundTask, componentTask):
     # TODO< assert on types of task >
 
@@ -18,14 +22,19 @@ def eventAbduction(compoundTask, componentTask):
     resultTask.truth = TruthValue.abduction(compoundTask.truth, componentTask.truth)
     resultTask.attention = AttentionValue()
 
+    ## TODO< used debug cookie of name of SDR if possible >
+    print("[t] event ABDUCTION   {{{}, {}!}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+
     return resultTask
 
 
 # see https://github.com/patham9/ANSNA/blob/e4f8c9879013754467ff149172b9eb10aa988bbf/src/Inference.c#L94
-# {Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
+#    {Event task a., Postcondition belief <a =/> b>.}
+# |-
+#    Derived event task b.
 #
 # /param compound is some object with sdr,truth,stamp
-# /param component is SDR or anything compatible
+# /param component is some object with sdr,truth,stamp
 def eventDeduction(compound, componentTask):
     # TODO< assert on types of task >
 
@@ -36,9 +45,15 @@ def eventDeduction(compound, componentTask):
     resultTask.truth = TruthValue.deduction(compound.truth, componentTask.truth)
     resultTask.attention = AttentionValue()
 
+    ## TODO< used debug cookie of name of SDR if possible >
+    print("[t] event DEDUCTION   {{{}, {}.}} |- {}!".format(compoundTask.retHumanReadableId(), componentTask.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+
     return resultTask
 
-# {Event task conditional., (Event) belief predicted.} |- Derived event task (&/,conditional,predicted).
+#    {Event task conditional., (Event) belief predicted.}
+# |-
+#    Derived event task (&/,conditional,predicted).
+#
 # /param conditional event - which happens before predicted
 # /param predicted happens after conditional
 def eventIntersection(conditional, predicted):
@@ -48,6 +63,10 @@ def eventIntersection(conditional, predicted):
     resultTask.identifyingSdr = resultTask.sdr # we do this because they are the same for NARS tasks!
     resultTask.truth = TruthValue.intersection(conditional.truth, predicted.truth)
     resultTask.attention = AttentionValue()
+
+    ## TODO< used debug cookie of name of SDR if possible >
+    print("[t] event INTERSECTION   {{{}, {}!}} |- {}!".format(conditional.retHumanReadableId(), predicted.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+
 
     return resultTask
 
@@ -70,6 +89,11 @@ def eventRevision(a, b):
     resultTask.truth = TruthValue.revision(a.truth, b.truth)
     # TODO< how to calculate the attention value? >
     resultTask.attention = AttentionValue()
+
+
+    ## TODO< used debug cookie of name of SDR if possible >
+    print("[t] event REVISION   {{{}, {}!}} |- {}!".format(a.retHumanReadableId(), b.retHumanReadableId(), resultTask.sdr.retHumanReadableId()))
+
 
     return resultTask
 
