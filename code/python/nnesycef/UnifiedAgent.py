@@ -260,9 +260,15 @@ class Reasoner(object):
 					## TODO< should this policy be another one instead? >
 					return a.sdr == b.sdr
 
+				print("[d2] considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+
 				if iEventBelief.sdr == occuredEvent.sdr:
+					print("[d2] ... rejected because SDR's are the same")
+
 					# because it can't do inference with itself
 					continue
+
+				print("[d2] ... applying event deduction")
 
 				derivedTask = NarsInference.eventDeduction(iEventBelief, occuredEvent)
 				
@@ -325,9 +331,15 @@ class Reasoner(object):
 
 			# derive event intersections
 			for iEventBelief in receiverConcept.eventBeliefs:
+				print("[d2] considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+
 				if iEventBelief.sdr == occuredEvent.sdr:
+					print("[d2] ... rejected because SDR's are the same")
+
 					# because it can't do inference with itself
 					continue
+
+				print("[d2] ... applying event intersection")
 
 				derivedTask = NarsInference.eventIntersection(iEventBelief, occuredEvent)
 				
