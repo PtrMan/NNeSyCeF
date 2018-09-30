@@ -18,6 +18,9 @@ class Fifo(object):
     def __getitem__(self, idx):
         return self._arr[idx]
 
+    def __setitem__(self, idx, value):
+        self._arr[idx] = value
+
     def __len__(self):
         return len(self._arr)
 
