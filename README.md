@@ -1,7 +1,7 @@
 # NNeSyCeF
 NAL and neuro symbolic based core framework
 
-An (apsiring) Artificial General Intelligence framework based on
+An (aspiring) Artificial General Intelligence framework based on
 * "Non axiomatic logic"(NAL) as the logic core and it's truth values for reasoning about uncertainty under "Assumption of Insufficient Knowledge and resources"(AIKR)
 * Procedural learning and decision making from ANSNA
 
