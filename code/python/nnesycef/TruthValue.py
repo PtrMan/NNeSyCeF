@@ -41,8 +41,8 @@ class TruthValue(object):
     def revision(a, b):
         f1 = a.frequency
         f2 = b.frequency
-        c1 = a.confidence
-        c2 = b.confidence
+        w1 = TruthFunctions.convCToW(a.confidence);
+        w2 = TruthFunctions.convCToW(b.confidence);
         w = w1 + w2
         f = (w1 * f1 + w2 * f2) / w
         c = TruthFunctions.convWToC(w)
