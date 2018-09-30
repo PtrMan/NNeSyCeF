@@ -8,7 +8,7 @@ from SequenceMemory import *
 # initialize random number generator
 seed()
 
-# TODO< figure out why infence is not taking place!
+# TODO< sort concepts >
 
 # TODO< feedback of priority after derivation >
 
@@ -16,16 +16,17 @@ seed()
 #       Perm1(a) xor (Perm2(b) xor c)
 # >
 
-
 # TODO< decorate task with temporal information for for ex: <(&/, a, +5) =/> b>
 #       must be a list of tuples which describe the coordinates in the (demangled) SDR of the time interval
 #     ----
 #       a better idea may be to use a sdr representation of ordered lists
 #     >
 
-# TODO< ignore overlapping sdr's if the number of bits is less than a threshold >
+# TODO< ignore overlapping sdr's if the number of bits is less than a threshold ? >
 
 # TODO< use concepts for pre and post condition decision making >
+
+# TODO< fix inference bugs (revision seems to be taking place when it shouldn't for example) >
 
 # TODO< check if stamps work correctly - we need unittests and a message >
 
