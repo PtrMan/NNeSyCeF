@@ -25,6 +25,9 @@ seed()
 #       a better idea may be to use a sdr representation of ordered lists
 #     >
 
+# TODO< overhaul event revision    https://github.com/patham9/ANSNA/wiki/Event-Revision
+#     >
+
 # TODO< ignore overlapping sdr's if the number of bits is less than a threshold ? >
 
 # TODO< use concepts for pre and post condition decision making >
