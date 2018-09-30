@@ -9,7 +9,7 @@ class Fifo(object):
 
     def append(self, e):
         self._arr.append(e)
-        self._arr = self._arr[max(0, self._size - len(self._arr)):]
+        self._arr = self._arr[max(0, len(self._arr) - self._size):] # limit length of FIFO
 
     def take(self):
         result = self._arr[0]
@@ -27,4 +27,4 @@ class Fifo(object):
             raise StopIteration
         else:
             self._currentIdx += 1
-            return self._currentIdx - 1
+            return self._arr[self._currentIdx-1]

@@ -8,8 +8,7 @@ from SequenceMemory import *
 # initialize random number generator
 seed()
 
-
-# TODO< debug for NARS inference with human readable representation of SDR's >
+# TODO< figure out why infence is not taking place!
 
 # TODO< feedback of priority after derivation >
 
@@ -20,6 +19,8 @@ seed()
 
 # TODO< decorate task with temporal information for for ex: <(&/, a, +5) =/> b>
 #       must be a list of tuples which describe the coordinates in the (demangled) SDR of the time interval
+#     ----
+#       a better idea may be to use a sdr representation of ordered lists
 #     >
 
 # TODO< ignore overlapping sdr's if the number of bits is less than a threshold >
@@ -249,7 +250,12 @@ class Reasoner(object):
 
 			print("[d] processEventForTemporalInference(), receiverConcept=" + receiverConcept.retHumanReadableId() + " occuredEvent=" + occuredEvent.retHumanReadableId() + " conceptForOccuredEvent=" + conceptForOccuredEvent.retHumanReadableId())
 
+			print("[d] eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
+
+			print(receiverConcept.eventBeliefs._arr)
+
 			for iEventBelief in receiverConcept.eventBeliefs:
+				print(iEventBelief)
 				print("[d]   eventBelief.sdr=" + iEventBelief.retHumanReadableId())
 
 			# temporal induction between all events in FIFO and occuredEvent
@@ -350,7 +356,7 @@ class Reasoner(object):
 			
 
 
-		# implemented EXACTLY like ANSNA, see https://github.com/patham9/ANSNA/wiki/Working-cycle
+		# implemented (hopefully) EXACTLY like ANSNA, see https://github.com/patham9/ANSNA/wiki/Working-cycle
 
 		# TODO< print small humanreadable hash of sdr for debugging purposes >
 		print("[d] activate concept by task sdr = %s" % task.retHumanReadableId())
@@ -362,6 +368,8 @@ class Reasoner(object):
 		# put it into the event FIFO of the concept
 		# like in ANSNA
 		selectedConcept.eventBeliefs.append(task)
+
+
 		## TODO< mitit to sane amount based on configuration or static variable >
 		if len(selectedConcept.eventBeliefs) > 100000000: # limit length of FIFO
 			selectedConcept.eventBeliefs = selectedConcept.eventBeliefs[1:]

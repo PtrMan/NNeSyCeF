@@ -2,6 +2,9 @@ class Stamp(object):
     def __init__(self, arr):
         self._arr = arr
 
+    def __getitem__(self, idx):
+        return self._arr[idx]
+
     @staticmethod
     def merge(a, b):
         zipped = []
