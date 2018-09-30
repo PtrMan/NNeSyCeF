@@ -4,6 +4,7 @@ from random import seed, randint
 
 from Distributed import *
 from SequenceMemory import *
+import Debug
 
 # initialize random number generator
 seed()
@@ -158,13 +159,12 @@ class Reasoner(object):
 		def checkIfTaskIsUnique(checkedTask):
 			return True
 
-		print("[d] derived " + origin)
-		print(str(derivedTask.truth.frequency) + " " + str(derivedTask.truth.confidence))
+		Debug.msg("d", 0, "derived {} with f={},c={}".format(origin, derivedTask.truth.frequency, derivedTask.truth.confidence))
 
 		if checkIfTaskIsUnique(derivedTask):
-			print("[d]: derived task was added")
+			Debug.msg("d", 0, "derived task was added")
 		else:
-			print("[d]: derived task was not added because it was not unique")
+			Debug.msg("d", 0, "derived task was not added because it was not unique")
 
 		if checkIfTaskIsUnique(derivedTask):
 			# we need to conceptualize it to make the system aware of the new knowledge
@@ -265,15 +265,15 @@ class Reasoner(object):
 			## fetch concept for occuredEvent
 			conceptForOccuredEvent = fetchConceptBySdr(occuredEvent.sdr)
 
-			print("[d] processEventForTemporalInference(), receiverConcept=" + receiverConcept.retHumanReadableId() + " occuredEvent=" + occuredEvent.retHumanReadableId() + " conceptForOccuredEvent=" + conceptForOccuredEvent.retHumanReadableId())
+			Debug.msg("d", 0, "processEventForTemporalInference(), receiverConcept=" + receiverConcept.retHumanReadableId() + " occuredEvent=" + occuredEvent.retHumanReadableId() + " conceptForOccuredEvent=" + conceptForOccuredEvent.retHumanReadableId())
 
-			print("[d] eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
+			Debug.msg("d", 0, "eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
 
 			print(receiverConcept.eventBeliefs._arr)
 
 			for iEventBelief in receiverConcept.eventBeliefs:
 				print(iEventBelief)
-				print("[d]   eventBelief.sdr=" + iEventBelief.retHumanReadableId())
+				Debug.msg("d", 0, "  eventBelief.sdr=" + iEventBelief.retHumanReadableId())
 
 			# temporal induction between all events in FIFO and occuredEvent
 			for iEventBelief in receiverConcept.eventBeliefs:
@@ -293,15 +293,15 @@ class Reasoner(object):
 					# >
 					return sdrsOverlap
 
-				print("[d2] considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+				Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
 				if iEventBelief.sdr == occuredEvent.sdr:
-					print("[d2] ... rejected because SDR's are the same")
+					Debug.msg("d", 1, " ... rejected because SDR's are the same")
 
 					# because it can't do inference with itself
 					continue
 
-				print("[d2] ... applying event deduction")
+				Debug.msg("d", 1, " ... applying event deduction")
 
 				derivedTask = NarsInference.eventDeduction(iEventBelief, occuredEvent)
 				
@@ -364,15 +364,15 @@ class Reasoner(object):
 
 			# derive event intersections
 			for iEventBelief in receiverConcept.eventBeliefs:
-				print("[d2] considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+				Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
 				if iEventBelief.sdr == occuredEvent.sdr:
-					print("[d2] ... rejected because SDR's are the same")
+					Debug.msg("d", 1, "... rejected because SDR's are the same")
 
 					# because it can't do inference with itself
 					continue
 
-				print("[d2] ... applying event intersection")
+				Debug.msg("d", 1, "... applying event intersection")
 
 				derivedTask = NarsInference.eventIntersection(iEventBelief, occuredEvent)
 				
@@ -386,7 +386,7 @@ class Reasoner(object):
 		# implemented (hopefully) EXACTLY like ANSNA, see https://github.com/patham9/ANSNA/wiki/Working-cycle
 
 		# TODO< print small humanreadable hash of sdr for debugging purposes >
-		print("[d] activate concept by task sdr = %s" % task.retHumanReadableId())
+		Debug.msg("d", 0, "activate concept by task sdr = %s" % task.retHumanReadableId())
 
 
 		# find concept by sdr
@@ -434,7 +434,7 @@ class Reasoner(object):
 	# generates a new concept and adds it to memory
 	# /param belief belief task which has to be conceptualized
 	def _conceptualize(self, belief):
-		print("[d] conceptualize belief task sdr = %s" % belief.retHumanReadableId())
+		Debug.msg("d", 0, "conceptualize belief task sdr = %s" % belief.retHumanReadableId())
 
 		createdConcept = Concept(belief.sdr)
 
@@ -492,7 +492,7 @@ while True:
 	print("")
 	print("")
 	print("")
-	print("[i] cycle")
+	Debug.msg("i", 0, "cycle")
 	reasoner.cycle()
 
 
