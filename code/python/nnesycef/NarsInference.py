@@ -90,6 +90,8 @@ def eventRevision(a, b):
     resultTaskStamp = Stamp.merge(a.stamp, b.stamp)
     resultTask = Task(Task.ENUMTYPE_JUDGEMENT, resultTaskStamp)
 
+    # TODO< patham9> I guess revision should take the intersection of the revised SDR's >
+
     resultTask.sdr = a.sdr
     resultTask.identifyingSdr = resultTask.sdr # we do this because they are the same for NARS tasks!
     resultTask.truth = TruthValue.revision(a.truth, b.truth)
