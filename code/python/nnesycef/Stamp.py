@@ -9,11 +9,20 @@ class Stamp(object):
     def merge(a, b):
         zipped = []
 
-        for i in range(0, len(a._arr) + len(b._arr)):
+        ia = 0
+        ib = 0
+
+        for i in range(0, min(len(a._arr), len(b._arr))):
             if (i % 2) == 0:
-                zipped.append(a[int(i/2)])
+                zipped.append(a[ia])
+                ia+=1
             else:
-                zipped.append(b[int(i/2)])
+                zipped.append(b[ib])
+                ib+=1
+
+        ## append remaining part of either stamp
+        zipped.extend(a._arr[ia:])
+        zipped.extend(b._arr[ib:])
 
         ## limit length
         zipped = zipped[:100]

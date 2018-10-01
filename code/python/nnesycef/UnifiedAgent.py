@@ -1,9 +1,9 @@
 # (Draft) of a unified agent similar to NARS
 
 from random import seed, randint
+import numba
 
-from Distributed import *
-from SequenceMemory import *
+import Distributed
 import Debug
 
 # initialize random number generator
@@ -105,7 +105,7 @@ class NarsMemory(object):
 		bestObjectOverlap = 0.0 # degree of overlap
 
 		for iObject in self.objects[1:]:
-			amountOfOverlap = distance(iObject.sdr, sdr)
+			amountOfOverlap = Distributed.distance(iObject.sdr, sdr)
 
 			# TODO< treat as no overlap if the number of overlapping bits is to small >
 			## we need to do this because it lowers the probability that the reasoning process
@@ -276,9 +276,10 @@ class Reasoner(object):
 			for iEventBelief in receiverConcept.eventBeliefs:
 				# checks if REVISION has to be done between Belief(Task)
 				def checkIsRevisable(a, b):
-					## for now we just revise if the SDR's are exactly the same
-					## TODO< should this policy be another one instead? >
-					sdrsOverlap = a.sdr == b.sdr
+					## the SDR's must be the same
+					sdrsEqual = a.sdr == b.sdr
+					if not sdrsEqual:
+						return False
 
 					# TODO< check evidence overlap
 					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
@@ -288,7 +289,7 @@ class Reasoner(object):
 					#     patham9: FIFO revision should happen up to a certain max. amount of time distance between the events.
 					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
 					# >
-					return sdrsOverlap
+					return True
 
 				Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
@@ -382,7 +383,7 @@ class Reasoner(object):
 
 		# implemented (hopefully) EXACTLY like ANSNA, see https://github.com/patham9/ANSNA/wiki/Working-cycle
 
-		# TODO< print small humanreadable hash of sdr for debugging purposes >
+
 		Debug.msg("d", 0, "activate concept by task sdr = %s" % task.retHumanReadableId())
 
 
@@ -393,10 +394,6 @@ class Reasoner(object):
 		# like in ANSNA
 		selectedConcept.eventBeliefs.append(task)
 
-
-		## TODO< mitit to sane amount based on configuration or static variable >
-		if len(selectedConcept.eventBeliefs) > 100000000: # limit length of FIFO
-			selectedConcept.eventBeliefs = selectedConcept.eventBeliefs[1:]
 
 
 		# ANSNA takes the tasks with the highest priority from the (temporal) attention-buffer
@@ -477,7 +474,7 @@ while True:
 	# we just receive random fake events
 	stamp = reasoner._genStamp()
 	eventTask = Task(Task.ENUMTYPE_JUDGEMENT, stamp)
-	eventTask.sdr = genRandom()
+	eventTask.sdr = Distributed.genRandom()
 	eventTask.truth = TruthValue(0.5, 0.5)
 	eventTask.attention = AttentionValue()
 
@@ -507,5 +504,5 @@ while True:
 
 
 	# we just let the system run a limited amount of time for testing
-	if cycleCounter > 5:
+	if cycleCounter > 20:
 		exit()
