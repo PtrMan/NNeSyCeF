@@ -11,22 +11,36 @@ def distanceAbs(a, b):
 
 	return d
 
-# optimization of similarity
-cdef int similarity_(unsigned char[:] a, unsigned char[:] b):
+# similarity as defined by HTM theory (number of overlaping on bits)
+def similarity2(a, b):
 	BITS = 2048
 
+	cdef int i, d
 	d = 0
 	i = 0
 	while i < BITS:
 		d += a[i] & b[i]
 		i += 1
-	return d
+	
+	return float(d) / (BITS * DISTRIBUTED_RATIO)
+
+cdef float similarity(unsigned char[:] a, unsigned char[:] b):
+	BITS = 2048
+
+	cdef int i, d
+	d = 0
+	i = 0
+	while i < BITS:
+		d += a[i] & b[i]
+		i += 1
+	
+	return float(d) / (BITS * DISTRIBUTED_RATIO)
 
 # similarity as defined by HTM theory (number of overlaping on bits)
-def similarity(a, b):
-	d = similarity_(a, b)
-
-	return float(d) / (DISTRIBUTED_BITS * DISTRIBUTED_RATIO)
+#def similarity(a, b):
+#	d = similarity_(a, b)
+#
+#	return float(d) / (DISTRIBUTED_BITS * DISTRIBUTED_RATIO)
 
 def genNull():
 	return bytearray(DISTRIBUTED_BITS)
