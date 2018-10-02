@@ -9,6 +9,24 @@ from Concept import Concept
 import Distributed
 import Debug
 
+# checks if REVISION has to be done between Belief(Task)
+cdef _checkIsRevisable(a, b):
+	## the SDR's must be the same
+	sdrsEqual = a.sdr == b.sdr
+	if not sdrsEqual:
+		return False
+
+	# TODO< check evidence overlap
+	#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
+	#     >
+
+	# TODO< take time distance into account 
+	#     patham9: FIFO revision should happen up to a certain max. amount of time distance between the events.
+	#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
+	# >
+	return True
+
+
 class Reasoner(object):
 	def __init__(self):
 		self._stampCounter = 0 # counter for the creation of stamps
@@ -105,16 +123,20 @@ class Reasoner(object):
 		self._thisCycleEventTasks = []
 
 
+	# retrives/fetches a concept by it's sdr
+	def _fetchConceptBySdr(self, task, sdr):
+		fetchedConcept = self._conceptMemory.retrieveBySdr(task.sdr)
+
+		## make sure that it is a concept
+		assert isinstance(fetchedConcept, Concept), "retrieved Object must be a Concept!"
+
+		return fetchedConcept
+
+
+
 	# activates a concept by sdr
 	def _activateConceptByTask(self, task):
-		# retrives/fetches a concept by it's sdr
-		def fetchConceptBySdr(sdr):
-			fetchedConcept = self._conceptMemory.retrieveBySdr(task.sdr)
-
-			## make sure that it is a concept
-			assert isinstance(fetchedConcept, Concept), "retrieved Object must be a Concept!"
-
-			return fetchedConcept
+		
 
 		# sends a event to a concept for temporal inference
 		# see https://github.com/patham9/ANSNA/wiki/Working-cycle
@@ -140,43 +162,32 @@ class Reasoner(object):
 			assert isinstance(occuredEvent, Task)
 
 			## fetch concept for occuredEvent
-			conceptForOccuredEvent = fetchConceptBySdr(occuredEvent.sdr)
+			conceptForOccuredEvent = self._fetchConceptBySdr(task, occuredEvent.sdr)
 
-			Debug.msg("d", 0, "processEventForTemporalInference(), receiverConcept=" + receiverConcept.retHumanReadableId() + " occuredEvent=" + occuredEvent.retHumanReadableId() + " conceptForOccuredEvent=" + conceptForOccuredEvent.retHumanReadableId())
+			if False:
+				Debug.msg("d", 0, "processEventForTemporalInference(), receiverConcept=" + receiverConcept.retHumanReadableId() + " occuredEvent=" + occuredEvent.retHumanReadableId() + " conceptForOccuredEvent=" + conceptForOccuredEvent.retHumanReadableId())
 
-			Debug.msg("d", 0, "eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
+			if False:
+				Debug.msg("d", 0, "eventBeliefs#={}".format(len(receiverConcept.eventBeliefs)))
 
 			for iEventBelief in receiverConcept.eventBeliefs:
-				Debug.msg("d", 0, "  eventBelief.sdr=" + iEventBelief.retHumanReadableId())
+				if False:
+					Debug.msg("d", 0, "  eventBelief.sdr=" + iEventBelief.retHumanReadableId())
 
 			# temporal induction between all events in FIFO and occuredEvent
 			for iEventBelief in receiverConcept.eventBeliefs:
-				# checks if REVISION has to be done between Belief(Task)
-				def checkIsRevisable(a, b):
-					## the SDR's must be the same
-					sdrsEqual = a.sdr == b.sdr
-					if not sdrsEqual:
-						return False
-
-					# TODO< check evidence overlap
-					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
-					#     >
-
-					# TODO< take time distance into account 
-					#     patham9: FIFO revision should happen up to a certain max. amount of time distance between the events.
-					#       see https://github.com/patham9/ANSNA/wiki/Event-Revision
-					# >
-					return True
-
-				Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+				if False:
+					Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
 				if iEventBelief.sdr == occuredEvent.sdr:
-					Debug.msg("d", 1, " ... rejected because SDR's are the same")
+					if False:
+						Debug.msg("d", 1, " ... rejected because SDR's are the same")
 
 					# because it can't do inference with itself
 					continue
 
-				Debug.msg("d", 1, " ... applying event deduction")
+				if False:
+					Debug.msg("d", 1, " ... applying event deduction")
 
 				derivedTask = NarsInference.eventDeduction(iEventBelief, occuredEvent)
 				
@@ -193,7 +204,7 @@ class Reasoner(object):
 				for iBeliefIdx in range(0, len(conceptForOccuredEvent.beliefsPrecondition)):
 					iBelief = conceptForOccuredEvent.beliefsPrecondition[iBeliefIdx]
 
-					if checkIsRevisable(iEventBelief, iBelief):
+					if _checkIsRevisable(iEventBelief, iBelief):
 						revisedBelief = NarsInference.eventRevision(iEventBelief, iBelief)
 
 						## replace with revised one
@@ -215,7 +226,7 @@ class Reasoner(object):
 				for iBeliefIdx in range(0, len(receiverConcept.beliefsPostcondition)):
 					iBelief = receiverConcept.beliefsPostcondition[iBeliefIdx]
 
-					if checkIsRevisable(occuredEvent, iBelief):
+					if _checkIsRevisable(occuredEvent, iBelief):
 						revisedBelief = NarsInference.eventRevision(occuredEvent, iBelief)
 
 						## ASK< is this fine here >
@@ -236,15 +247,18 @@ class Reasoner(object):
 
 			# derive event intersections
 			for iEventBelief in receiverConcept.eventBeliefs:
-				Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
+				if False:
+					Debug.msg("d", 1, "considering sdr={} and sdr={}".format(iEventBelief.retHumanReadableId(), occuredEvent.retHumanReadableId()))
 
 				if iEventBelief.sdr == occuredEvent.sdr:
-					Debug.msg("d", 1, "... rejected because SDR's are the same")
+					if False:
+						Debug.msg("d", 1, "... rejected because SDR's are the same")
 
 					# because it can't do inference with itself
 					continue
 
-				Debug.msg("d", 1, "... applying event intersection")
+				if False:
+					Debug.msg("d", 1, "... applying event intersection")
 
 				derivedTask = NarsInference.eventIntersection(iEventBelief, occuredEvent)
 				
@@ -262,7 +276,7 @@ class Reasoner(object):
 
 
 		# find concept by sdr
-		selectedConcept = fetchConceptBySdr(task.sdr)
+		selectedConcept = self._fetchConceptBySdr(task, task.sdr)
 
 		# put it into the event FIFO of the concept
 		# like in ANSNA
@@ -302,7 +316,8 @@ class Reasoner(object):
 	# generates a new concept and adds it to memory
 	# /param belief belief task which has to be conceptualized
 	def _conceptualize(self, belief):
-		Debug.msg("d", 0, "conceptualize belief task sdr = %s" % belief.retHumanReadableId())
+		if False:
+			Debug.msg("d", 0, "conceptualize belief task sdr = %s" % belief.retHumanReadableId())
 
 		createdConcept = Concept(belief.sdr)
 
