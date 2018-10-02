@@ -276,9 +276,6 @@ class Reasoner(object):
 					if checkIsRevisable(iEventBelief, iBelief):
 						revisedBelief = NarsInference.eventRevision(iEventBelief, iBelief)
 
-						## ASK< is this fine here >
-						derived(revisedBelief, "event revision")
-
 						## replace with revised one
 						conceptForOccuredEvent.beliefsPrecondition[iBeliefIdx] = revisedBelief
 
