@@ -24,7 +24,7 @@
     // limit length to maximum stamp size
     let result =  Array.sub completeZipped 0 (min STAMP_LENGTH (Array.length completeZipped))
 
-    result
+    Stamp(result)
 
   let checkOverlap (a:Stamp) (b:Stamp) =
     let aAsSet = Set.ofArray a.arr

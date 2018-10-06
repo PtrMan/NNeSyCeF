@@ -67,8 +67,9 @@ module main
     val sdr: Sdr.Sdr
     val term: Term
     val truth: Truth.Value
+    val stamp: Stamp.Stamp
 
-    new(sdr_, term_, truth_) = {sdr=sdr_; term=term_; truth=truth_}
+    new(sdr_, term_, truth_, stamp_) = {sdr=sdr_; term=term_; truth=truth_; stamp=stamp_}
   end
 
 
@@ -93,6 +94,9 @@ module main
   // derives a Sentence out of premise sentences
   // with computing the coresponding SDR's
   let derivedSentence
+    (leftStamp: Stamp.Stamp)
+    (rightStamp: Stamp.Stamp)
+
     (left: SparseTerm)
     (right: SparseTerm)
 
@@ -124,7 +128,7 @@ module main
       let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
 
       // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth)
+      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
 
 
 
@@ -134,6 +138,9 @@ module main
   | NONE
 
   let derivedProductSentence
+    (leftStamp: Stamp.Stamp)
+    (rightStamp: Stamp.Stamp)
+
     (left: SparseTerm)
     (right: SparseTerm)
 
@@ -168,7 +175,7 @@ module main
       let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
 
       // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth)
+      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
 
 
 
@@ -183,7 +190,7 @@ module main
   //     nal5-implication-based-syllogisms
   //          (first easy part is done)
 
-  let renameme0(premiseA: DualSentence) (premiseB: DualSentence) =
+  let renameme0 (premiseA: DualSentence) (premiseAStamp: Stamp.Stamp) (premiseB: DualSentence) (premiseBStamp: Stamp.Stamp) =
     let left = premiseA.termWithSdr
     let right = premiseB.termWithSdr
 
@@ -203,12 +210,12 @@ module main
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (B --> C) |- (A --> C) :pre ((:!= A C)) :post (:t/deduction :d/strong :allow-backward)]
             if not (isEqual(a, c)) then
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') RIGHTPREDICATE  "deduction" "strong" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') RIGHTPREDICATE  "deduction" "strong" |]
           
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (B --> C) |- (C --> A) :pre ((:!= C A)) :post (:t/exemplification :d/weak :allow-backward)]
             if not (isEqual(c, a)) then
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '-', '>', ' ') LEFTSUBJECT  "exemplification" "weak" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '-', '>', ' ') LEFTSUBJECT  "exemplification" "weak" |]
     
     
       | Sentence((' ', '-', '-', '>', ' '), a1, b), Sentence((' ', '-', '-', '>', ' '), a2, c)
@@ -216,14 +223,14 @@ module main
           -> 
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (A --> C) |- (C --> B) :pre ((:!= B C)) :post (:t/abduction :d/weak :allow-backward)]
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '-', '>', ' ') LEFTPREDICATE  "abduction" "weak" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '-', '>', ' ') LEFTPREDICATE  "abduction" "weak" |]
 
 
             // ; similarity-based syllogism
             // ; If P and S are a special case of M then they might be similar (weak)
             // ; also if P and S are a general case of M
             // #R[(M --> P) (M --> S) |- (S <-> P) :post (:t/comparison :d/weak :allow-backward) :pre ((:!= S P))]
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '<', '>', ' ') LEFTPREDICATE  "comparison" "weak" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '<', '>', ' ') LEFTPREDICATE  "comparison" "weak" |]
     
     
       | Sentence((' ', '-', '-', '>', ' '), a, c1), Sentence((' ', '-', '-', '>', ' '), b, c2)
@@ -231,14 +238,14 @@ module main
           ->
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> C) (B --> C) |- (B --> A) :pre ((:!= A B)) :post (:t/induction :d/weak :allow-backward)]
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '-', '>', ' ') LEFTSUBJECT  "induction" "weak" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '-', '>', ' ') LEFTSUBJECT  "induction" "weak" |]
 
 
             // ; similarity-based syllogism
             // ; If P and S are a special case of M then they might be similar (weak)
             // ; also if P and S are a general case of M
             // #R[(P --> M) (S --> M) |- (S <-> P) :post (:t/comparison :d/weak :allow-backward) :pre ((:!= S P))]
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTSUBJECT  "comparison" "weak" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTSUBJECT  "comparison" "weak" |]
     
       // ; similarity from inheritance
       // ; If S is a special case of P and P is a special case of S then S and P are similar
@@ -246,7 +253,7 @@ module main
       | Sentence((' ', '-', '-', '>', ' '), s0, p0), Sentence((' ', '-', '-', '>', ' '), p1, s1)
         when s0 = s1 && p0 = p1
           ->
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') LEFTPREDICATE  "intersection" "strong" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') LEFTPREDICATE  "intersection" "strong" |]
 
 
 
@@ -257,7 +264,7 @@ module main
       | Sentence((' ', '-', '<', '>', ' '), s0, p0), Sentence((' ', '-', '-', '>', ' '), p1, s1)
         when s0 = s1 && p0 = p1
           ->
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') LEFTPREDICATE  "reduce-conjunction" "strong" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') LEFTPREDICATE  "reduce-conjunction" "strong" |]
 
 
 
@@ -266,21 +273,21 @@ module main
       | Sentence((' ', '-', '-', '>', ' '), m0, p), Sentence((' ', '-', '<', '>', ' '), s, m1)
         when m0 = m1  && not (isEqual(s, p))
           ->
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
     
       // ; If M is a special case of P and S and M are similar then S is also a special case of P (strong)
       // #R[(P --> M) (S <-> M) |- (P --> S) :pre ((:!= S P)) :post (:t/analogy :d/strong :allow-backward)]
       | Sentence((' ', '-', '-', '>', ' '), p, m0), Sentence((' ', '-', '<', '>', ' '), s, m1)
         when m0 = m1  && not (isEqual(s, p))
           ->
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '<', '>', ' ') RIGHTSUBJECT  "analogy" "strong" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '<', '>', ' ') RIGHTSUBJECT  "analogy" "strong" |]
     
       // ; If M is a special case of P and S and M are similar then S is also a special case of P (strong)
       // #R[(M <-> P) (S <-> M) |- (S <-> P) :pre ((:!= S P)) :post (:t/resemblance :d/strong :allow-backward)]
       | Sentence((' ', '-', '-', '>', ' '), m0, p), Sentence((' ', '-', '<', '>', ' '), s, m1)
         when m0 = m1  && not (isEqual(s, p))
           ->
-            derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
+            derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
     
 
 
@@ -290,7 +297,7 @@ module main
       // ;Set Definition Similarity to Inheritance
       //      #R[(S <-> {P}) S |- (S --> {P}) :post (:t/identity :d/identity :allow-backward)]
       | Sentence((' ', '-', '<', '>', '{'), s0, p), s1  when s0 = s1 ->
-        derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', '{') LEFTPREDICATE  "identity" "identity" |]
+        derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', '{') LEFTPREDICATE  "identity" "identity" |]
     
       // ;Set Definition Similarity to Inheritance
       // #R[(S <-> {P}) {P} |- (S --> {P}) :post (:t/identity :d/identity :allow-backward)]
@@ -305,7 +312,7 @@ module main
       // ;Set Definition Similarity to Inheritance
       //      #R[([S] <-> P) P |- ([S] --> P) :post (:t/identity :d/identity :allow-backward)]
       | Sentence(('[', '-', '<', '>', ' '), s, p0), p1  when p0 = p1 ->
-        derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   LEFTSUBJECT ('[', '-', '-', '>', ' ') LEFTPREDICATE  "identity" "identity" |]
+        derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT ('[', '-', '-', '>', ' ') LEFTPREDICATE  "identity" "identity" |]
     
 
 
@@ -371,14 +378,14 @@ module main
           ->
             // ; relation introduction rule:
             // #R[(A --> C) (A --> D) |- ((* A A) --> (* C D)) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth   NONE LEFTSUBJECT NONE LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   NONE LEFTSUBJECT NONE LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
     
       | Sentence((' ', '-', '-', '>', ' '), a, c0), Sentence((' ', '-', '-', '>', ' '), b, c1)
         when c0 = c1
           ->
             // ; relation introduction rule:
             // #R[(A --> C) (B --> C) |- ((* A B) --> (* C C)) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth   NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') NONE RIGHTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') NONE RIGHTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
     
 
       | Sentence(('{', '-', '-', '>', ' '), Set(GENERIC, [|a0|]), c), Sentence((' ', '-', '-', '>', ' '), a1, d)
@@ -386,7 +393,7 @@ module main
           ->
             // ; relation introduction rule:
             // #R[({A} --> C) (A --> D) |- ((* {A} A) --> (* C D)) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth  EXT LEFTSUBJECT NONE LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth  EXT LEFTSUBJECT NONE LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
 
 
       | Sentence((' ', '-', '-', '>', ' '), a0, c0), Sentence(('{', '-', '-', '>', ' '), Set(GENERIC, [|a1|]), d)
@@ -394,7 +401,7 @@ module main
           ->
             // ; relation introduction rule:
             // #R[(A --> C) ({A} --> D) |- ((* A {A}) --> (* C D)) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth  NONE LEFTSUBJECT EXT LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth  NONE LEFTSUBJECT EXT LEFTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE NONE RIGHTPREDICATE  "intersection" "?" |]
 
 
       | Sentence((' ', '-', '-', '>', '['), a, Set(GENERIC, [|c0|])), Sentence((' ', '-', '-', '>', ' '), b, c1)
@@ -402,7 +409,7 @@ module main
           ->
             // ; relation introduction rule:
             // #R[(A --> [C]) (B --> C) |- ((* A B) --> (* [C] C)) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth  NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') INT LEFTPREDICATE NONE LEFTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth  NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') INT LEFTPREDICATE NONE LEFTPREDICATE  "intersection" "?" |]
 
 
       | Sentence((' ', '-', '-', '>', ' '), a, c0), Sentence((' ', '-', '-', '>', '['), b, Set(GENERIC, [|c1|]))
@@ -410,7 +417,7 @@ module main
           ->
             // ; relation introduction rule:
             // #R[(A --> C) (B --> [C]) |- ((* A B) --> (* C [C])) :post (:t/intersection)]
-            derived <- Array.append derived [| derivedProductSentence left right  leftTruth rightTruth  NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE INT LEFTPREDICATE  "intersection" "?" |]
+            derived <- Array.append derived [| derivedProductSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth  NONE LEFTSUBJECT NONE RIGHTSUBJECT (' ', '-', '-', '>', ' ') NONE LEFTPREDICATE INT LEFTPREDICATE  "intersection" "?" |]
 
       | _ ->
         derived <- derived
@@ -434,14 +441,14 @@ module main
           when m0 = m1 && s <> p
             ->
               // #R[(M ==> P) (S ==> M) |- (S ==> P) :post (:t/deduction :order-for-all-same :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTPREDICATE  "deduction" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTPREDICATE  "deduction" "?" |]
     
 
         | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '=', '=', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               // #R[(P ==> M) (S ==> M) |- (S ==> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTSUBJECT  "induction" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTSUBJECT  "induction" "?" |]
     
         | Sentence((' ', '=', c0, '>', ' '), p, m0), Sentence((' ', '=', c1, '>', ' '), s, m1)
           when m0 = m1 && s <> p && checkCopula1 c0 c1
@@ -451,14 +458,14 @@ module main
               #R[(P =/> M) (S =/> M) |- (S =|> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
               #R[(P =\> M) (S =\> M) |- (S =|> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
               *)
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '|', '>', ' ') LEFTSUBJECT  "induction" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '|', '>', ' ') LEFTSUBJECT  "induction" "?" |]
     
 
         | Sentence((' ', '=', '=', '>', ' '), m0, p), Sentence((' ', '=', '=', '>', ' '), m1, s)
           when m0 = m1 && s <> p
             ->
               // #R[(M ==> P) (M ==> S) |- (S ==> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
 
         | Sentence((' ', '=', c0, '>', ' '), m0, p), Sentence((' ', '=', c1, '>', ' '), m1, s)
           when m0 = m1 && s <> p && checkCopula1 c0 c1
@@ -468,32 +475,32 @@ module main
               #R[(M =|> P) (M =|> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
               #R[(M =\> P) (M =\> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
               *)
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
 
 
         | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '=', '=', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               // #R[(P ==> M) (M ==> S) |- (S ==> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
       
         | Sentence((' ', '=', '/', '>', ' '), p, m0), Sentence((' ', '=', '/', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               // #R[(P =/> M) (M =/> S) |- (S =\> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '\\', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '\\', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
       
         | Sentence((' ', '=', '\\', '>', ' '), p, m0), Sentence((' ', '=', '\\', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               // #R[(P =\> M) (M =\> S) |- (S =/> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '/', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '/', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
       
         | Sentence((' ', '=', '|', '>', ' '), p, m0), Sentence((' ', '=', '|', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               // #R[(P =|> M) (M =|> S) |- (S =|> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
 
 
 
@@ -527,7 +534,9 @@ module main
 
     val type_: EnumTaskType
 
-    new(sentence_:DualSentence, source_:EnumTaskSource, type__:EnumTaskType) = {sentence=sentence_;source=source_;type_=type__}
+    val stamp: Stamp.Stamp
+
+    new(sentence_:DualSentence, source_:EnumTaskSource, type__:EnumTaskType, stamp_:Stamp.Stamp) = {sentence=sentence_;source=source_;type_=type__;stamp=stamp_}
   end
 
   open System.Collections.Generic
@@ -721,7 +730,7 @@ module main
         // required to collect derivtion results to avoid unwanted feedback
         let derived = List<Derived[]>()
 
-        printfn "HRE %d" (conceptsToConsult.Length)
+        //printfn "HRE %d" (conceptsToConsult.Length)
 
         for iConcept in conceptsToConsult do
           printfn "Consult concept"
@@ -731,21 +740,24 @@ module main
           for beliefIdx in 0.. iConcept.beliefs.Count-1 do
             let iBelief = iConcept.beliefs.[beliefIdx]
 
-            let isRevisable = iBelief.sentence.termWithSdr.term = task.sentence.termWithSdr.term
+            let isOverlapping = Stamp.checkOverlap iBelief.stamp task.stamp
 
-            if isRevisable then
-              // revision
+            if not isOverlapping then
+              let isRevisable = iBelief.sentence.termWithSdr.term = task.sentence.termWithSdr.term
+              
+              if isRevisable then
+                // revision
 
-              revise iConcept beliefIdx |>
+                revise iConcept beliefIdx |>
 
-              ignore
-            else
-              // normal inference
+                ignore
+              else
+                // normal inference
 
-              let thisderived = renameme0 task.sentence iBelief.sentence
-              derived.Add thisderived |>
+                let thisderived = renameme0 task.sentence task.stamp iBelief.sentence iBelief.stamp
+                derived.Add thisderived |>
 
-              ignore
+                ignore
 
       
         for i in derived do
@@ -771,10 +783,10 @@ module main
             match self.concepts.map_.TryGetValue j.term with
             | (True, v) ->
               // add belief
-              v.beliefs.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT))
+              v.beliefs.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT, j.stamp))
 
               // add task
-              self.tasks.content.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT))
+              self.tasks.content.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT, j.stamp))
 
 
 
@@ -839,7 +851,7 @@ module main
       )
     )
 
-  let derived = renameme0 a0 a1
+  let derived = renameme0 a0 (Stamp.Stamp [|int64(0)|]) a1  (Stamp.Stamp [|int64(1)|])
 
   //printfn "%f;%f" derived.truth.f derived.truth.c
 
