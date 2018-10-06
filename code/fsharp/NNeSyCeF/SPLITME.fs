@@ -1,17 +1,7 @@
 module main
 
   open Truth
-
   open Term
-
-
-
-
-
-  
-  
-
-
   open Sdr
 
 
@@ -48,12 +38,6 @@ module main
 
     List.filter filterFn db.dualSentences
 
-
-
-  // check if two terms are equal
-  // TODO< check hash and check content if hash matches >
-  let isEqual(a:Term, b:Term) =
-    a = b
 
   type EnumAddress =
     | LEFTPREDICATE
@@ -209,17 +193,17 @@ module main
           ->
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (B --> C) |- (A --> C) :pre ((:!= A C)) :post (:t/deduction :d/strong :allow-backward)]
-            if not (isEqual(a, c)) then
+            if not (a = c) then
               derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '-', '>', ' ') RIGHTPREDICATE  "deduction" "strong" |]
           
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (B --> C) |- (C --> A) :pre ((:!= C A)) :post (:t/exemplification :d/weak :allow-backward)]
-            if not (isEqual(c, a)) then
+            if not (c = a) then
               derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '-', '-', '>', ' ') LEFTSUBJECT  "exemplification" "weak" |]
     
     
       | Sentence((' ', '-', '-', '>', ' '), a1, b), Sentence((' ', '-', '-', '>', ' '), a2, c)
-        when a1 = a2 && not (isEqual(b, c))
+        when a1 = a2 && not (b = c)
           -> 
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> B) (A --> C) |- (C --> B) :pre ((:!= B C)) :post (:t/abduction :d/weak :allow-backward)]
@@ -234,7 +218,7 @@ module main
     
     
       | Sentence((' ', '-', '-', '>', ' '), a, c1), Sentence((' ', '-', '-', '>', ' '), b, c2)
-        when c1 = c2 && not (isEqual(a, b))
+        when c1 = c2 && not (a = b)
           ->
             // ;;Inheritance-Related Syllogisms
             // #R[(A --> C) (B --> C) |- (B --> A) :pre ((:!= A B)) :post (:t/induction :d/weak :allow-backward)]
@@ -271,21 +255,21 @@ module main
       // ; If M is a special case of P and S and M are similar then S is also a special case of P (strong)
       // #R[(M --> P) (S <-> M) |- (S --> P) :pre ((:!= S P)) :post (:t/analogy :d/strong :allow-backward)]
       | Sentence((' ', '-', '-', '>', ' '), m0, p), Sentence((' ', '-', '<', '>', ' '), s, m1)
-        when m0 = m1  && not (isEqual(s, p))
+        when m0 = m1  && not (s = p)
           ->
             derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
     
       // ; If M is a special case of P and S and M are similar then S is also a special case of P (strong)
       // #R[(P --> M) (S <-> M) |- (P --> S) :pre ((:!= S P)) :post (:t/analogy :d/strong :allow-backward)]
       | Sentence((' ', '-', '-', '>', ' '), p, m0), Sentence((' ', '-', '<', '>', ' '), s, m1)
-        when m0 = m1  && not (isEqual(s, p))
+        when m0 = m1  && not (s = p)
           ->
             derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '-', '<', '>', ' ') RIGHTSUBJECT  "analogy" "strong" |]
     
       // ; If M is a special case of P and S and M are similar then S is also a special case of P (strong)
       // #R[(M <-> P) (S <-> M) |- (S <-> P) :pre ((:!= S P)) :post (:t/resemblance :d/strong :allow-backward)]
       | Sentence((' ', '-', '-', '>', ' '), m0, p), Sentence((' ', '-', '<', '>', ' '), s, m1)
-        when m0 = m1  && not (isEqual(s, p))
+        when m0 = m1  && not (s = p)
           ->
             derived <- Array.append derived [| derivedSentence premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '-', '<', '>', ' ') LEFTPREDICATE  "analogy" "strong" |]
     
