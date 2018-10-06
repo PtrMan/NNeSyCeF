@@ -24,3 +24,22 @@ module Sdr
     let countOfBBits = b.arr |> Array.filter (fun x -> x) |> Array.length
   
     countOfOverlappingBits = countOfBBits
+  
+
+
+  
+  // TODO< create file for compact SDR >
+  (*
+  working with compact SDR's
+
+  // returns if two compact sdr's overlap
+  let sdrOverlap a b = List.exists (fun x -> (List.exists (fun y -> y = x) b)) a
+
+
+  let sdrUnion a b = 
+    let aSet = Set.ofList a
+    let bSet = Set.ofList b
+    let unionSet = Set.union aSet bSet
+    Set.toArray unionSet
+    
+  *)

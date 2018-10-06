@@ -1,96 +1,15 @@
 module main
 
-  //printfn "%A" array1
-
   open Truth
 
-  (*
-  Tony: This should be esier to work with:
-  *)
-
-  type EnumSetType = 
-  | GENERIC // generic set which interpretation (intension /extension) depends implicitly on the side of the statement
-  | INT // intersional set
-  | EXT // extensional set
-
-  // copula with meta information for sets
-  // left and right char's are '{' and ']' for the representation of sets
-  // else ' ' is used
-  type Copula = char   * char * char * char *   char
-  type Term =
-  | Name of string
-  | Sentence of Copula * Term * Term
-  | Set of EnumSetType * Term[]
-
-
-
-
-  let mapCharToReverse x =
-    match x with
-    | '[' -> ']'
-    | '{' -> '}'
-    | ' ' -> ' '
-
-  let rec convToString t =
-    match t with
-    | Name n -> sprintf "%s" n
-    | Sentence((p, c0,c1,c2, s), a, b) -> (sprintf "<%c%A%c%c%c%c%c%A%c>" p  (convToString a)   (mapCharToReverse p)  c0 c1 c2 s   (convToString b)  (mapCharToReverse s)  )
-// ()
+  open Term
 
 
 
 
 
-
-  (*
-  type Term =
-    | Name of string
-
-    // statement as defined by NARS theory
-    // encoded copula in a flexible way
-    // --> : ('-', '<', '-')  (reversed statement and side)
-    // --> : ('-', '-', '>')
-    // <-> : ('-', '<', '>')
-    | Statement  of copulaEncoded : (char * char * char) * a : Term * b : Term
-
-
-  //let t0 = new TruthValue(1.0, 0.9)
-
-  let term1:Term = Name "a"
-
-
-  let copulaEncoding = ('-', '-', '>')
-  let t1 = Statement (('-', '-', '>'),  (Name "a"), (Name "b"))
-
-
-  // matching
-  let t2 :Term = (Term.Name "b")
-
-  let n = match t2 with
-          | Name a -> Term.Name a
-          | Statement (_, y, x) -> y
-  *)
-
-  // sdr union
-
-
-  (*
-  working with compact SDR's
-
-  // returns if two compact sdr's overlap
-  let sdrOverlap a b = List.exists (fun x -> (List.exists (fun y -> y = x) b)) a
-
-
-  let sdrUnion a b = 
-    let aSet = Set.ofList a
-    let bSet = Set.ofList b
-    let unionSet = Set.union aSet bSet
-    Set.toArray unionSet
-
-
-
-  printfn "%A" (sdrUnion a b)
-  *)
+  
+  
 
 
   open Sdr
@@ -134,7 +53,7 @@ module main
   // check if two terms are equal
   // TODO< check hash and check content if hash matches >
   let isEqual(a:Term, b:Term) =
-    false
+    a = b
 
   type EnumAddress =
     | LEFTPREDICATE
@@ -181,7 +100,7 @@ module main
     rightTruth: Truth.Value,
 
     subjectAddress:EnumAddress,
-    copula:Copula,
+    copula:FusedCopula,
     predicateAddress:EnumAddress,
   
     truthFn:string,
@@ -228,7 +147,7 @@ module main
     subject1SetType:EnumBuildSetType,
     subject1Address:EnumAddress,
 
-    copula:Copula,
+    copula:FusedCopula,
   
     predicate0SetType:EnumBuildSetType,
     predicate0Address:EnumAddress,
