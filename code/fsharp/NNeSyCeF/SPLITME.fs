@@ -634,10 +634,15 @@ module main
 
     val taskSelectionAmount: int
 
-    new(taskSelectionAmount_:int)={
+    // function which is used for derivation
+    val derivationFn: (DualSentence) -> (Stamp.Stamp) -> (DualSentence) -> (Stamp.Stamp) -> Derived[]
+
+    new(taskSelectionAmount_:int,derivationFn_)={
       concepts = new ConceptPriorityQueue 50;
       tasks=TaskPriorityQueue 50;
-      taskSelectionAmount=10;}
+      taskSelectionAmount=10;
+      derivationFn=derivationFn_
+    }
   
     // creates new concepts for all involved (sub)terms if they don't exist
     //
@@ -754,7 +759,7 @@ module main
               else
                 // normal inference
 
-                let thisderived = renameme0 task.sentence task.stamp iBelief.sentence iBelief.stamp
+                let thisderived = self.derivationFn task.sentence task.stamp iBelief.sentence iBelief.stamp
                 derived.Add thisderived |>
 
                 ignore
