@@ -1,10 +1,6 @@
 ﻿// basic datastructures of NARS
 
 module Datastructures
-
-  use Term
-  
-
   // we store a dual representation of SDR and a symbolic description of a Term
   type SparseTerm = struct
     val sdr : Sdr.Sdr
