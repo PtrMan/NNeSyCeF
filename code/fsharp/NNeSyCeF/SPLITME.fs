@@ -7,132 +7,7 @@ module main
   open Datastructures
   open System.Collections.Generic
   
-
-  type EnumAddress =
-    | LEFTPREDICATE
-    | LEFTSUBJECT
-    | RIGHTPREDICATE
-    | RIGHTSUBJECT
-
-
-  // called when something was derived
-  type Derived = struct
-    val sdr: Sdr.Sdr
-    val term: Term
-    val truth: Truth.Value
-    val stamp: Stamp.Stamp
-
-    new(sdr_, term_, truth_, stamp_) = {sdr=sdr_; term=term_; truth=truth_; stamp=stamp_}
-  end
-
-
-
-  // "dereferences" the premisses by address
-  let derefTermByAddress (left:SparseTerm) (right:SparseTerm) (address:EnumAddress) =
-    match address with
-    | LEFTPREDICATE ->
-      match left.term with
-      | Sentence(_, _, p) -> p
-    | LEFTSUBJECT ->
-      match left.term with
-      | Sentence(_, s, _) -> s
-    | RIGHTPREDICATE ->
-      match right.term with
-      | Sentence(_, _, p) -> p
-    | RIGHTSUBJECT ->
-      match right.term with
-      | Sentence(_, s, _) -> s
-  
-
-  
-  type EnumBuildSetType =
-  | EXT
-  | INT
-  | NONE
-
-
-  // derives a Sentence out of premise sentences
-  // with computing the coresponding SDR's
-  let derivedSentence
-    (leftStamp: Stamp.Stamp)
-    (rightStamp: Stamp.Stamp)
-
-    (left: SparseTerm)
-    (right: SparseTerm)
-
-    (leftTruth: Truth.Value)
-    (rightTruth: Truth.Value)
-
-    (subjectAddress:EnumAddress)
-    (copula:FusedCopula)
-    (predicateAddress:EnumAddress)
-  
-    (truthFn:string)
-    (attentionFn:string) =
-      // "dereferences" the premisses by address
-      let derefTermByAddress2 = derefTermByAddress left right
-
-      // TODO< demangle left side of SDR >
-      // TODO< demangle right side of SDR >
-
-      // TODO< build result SDR >
-      let derivedSdr = sdrZero
-
-
-
-      let subjectTerm = derefTermByAddress2 subjectAddress
-      let predicateTerm = derefTermByAddress2 predicateAddress
-    
-      let conclusionSentenceTerm = Sentence(copula, subjectTerm, predicateTerm)
-
-      let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
-
-      // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
-
-
-  let derivedProductSentence
-    (leftStamp: Stamp.Stamp)
-    (rightStamp: Stamp.Stamp)
-
-    (left: SparseTerm)
-    (right: SparseTerm)
-
-    (leftTruth: Truth.Value)
-    (rightTruth: Truth.Value)
-  
-
-    (subject0SetType:EnumBuildSetType)
-    (subject0Address:EnumAddress)
-  
-    (subject1SetType:EnumBuildSetType)
-    (subject1Address:EnumAddress)
-
-    (copula:FusedCopula)
-  
-    (predicate0SetType:EnumBuildSetType)
-    (predicate0Address:EnumAddress)
-  
-    (predicate1SetType:EnumBuildSetType)
-    (predicate1Address:EnumAddress)
-  
-  
-    (truthFn:string)
-    (attentionFn:string) =
-      // TODO< build result SDR >
-      let derivedSdr = sdrZero
-
-
-      // TODO< build result >
-      let conclusionSentenceTerm = Name "X"
-
-      let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
-
-      // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
-
-
-
+  open DeriverHelper
 
   // done rules
   //     nal1-nal2-inheritance-related-syllogisms
@@ -144,7 +19,7 @@ module main
   //     nal5-implication-based-syllogisms
   //          (first easy part is done)
 
-  let renameme0 (premiseA: DualSentence) (premiseAStamp: Stamp.Stamp) (premiseB: DualSentence) (premiseBStamp: Stamp.Stamp) =
+  let derive (premiseA: DualSentence) (premiseAStamp: Stamp.Stamp) (premiseB: DualSentence) (premiseBStamp: Stamp.Stamp) =
     let left = premiseA.termWithSdr
     let right = premiseB.termWithSdr
 
@@ -565,6 +440,18 @@ module main
 
       stampCounter = int64(0)
     }
+
+    // public just for ease of adding functionality
+    member self.addJudgmentAsBeliefAndTask (sparseTerm: SparseTerm) (truth: Truth.Value) (stamp: Stamp.Stamp) =
+      self.conceptualize sparseTerm
+
+      match self.concepts.map_.TryGetValue sparseTerm.term with
+      | (True, v) ->
+        // add belief
+        v.beliefs.Add (Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
+
+        // add task
+        self.tasks.content.Add (Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
   
     // creates new concepts for all involved (sub)terms if they don't exist
     //
@@ -705,6 +592,8 @@ module main
         for i in derived do
           for j in i do
             let sparseTerm = SparseTerm(Sdr.sdrZero, j.term)
+
+            (* commented because refactoring was not tested
             self.conceptualize sparseTerm
 
             match self.concepts.map_.TryGetValue j.term with
@@ -714,7 +603,8 @@ module main
 
               // add task
               self.tasks.content.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT, j.stamp))
-
+             *)
+            self.addJudgmentAsBeliefAndTask sparseTerm j.truth j.stamp
 
 
       let deriveTasks = match task.type_ with
@@ -734,90 +624,10 @@ module main
 
 
 
+  let addJudgement (r:Reasoner) (sentence:DualSentence) =
+    let stamp = Stamp.Stamp([|r.stampCounter|])
+    r.stampCounter <- r.stampCounter+int64(1);
 
+    r.addJudgmentAsBeliefAndTask sentence.termWithSdr sentence.truth stamp
 
-
-
-
-
-
-
-
-
-
-
-  let t1 = Name "b"
-  let t2 = Sentence(('{', '-', '-', '>', '['), Name "a", Name "b")
-
-  convToString t2 |> printfn "%s"
-
-
-
-
-
-
-
-  // test
-
-  let a0 = DualSentence(
-    Truth.Value(0.5f, 0.5f), 
-
-    SparseTerm(
-      sdrZero,
-      Sentence((' ', '-', '-', '>', ' '), Name("a"), Name("b"))
-      )
-    )
-
-
-  let a1 = DualSentence(
-    Truth.Value(0.5f, 0.5f), 
-
-    SparseTerm(
-      sdrZero,
-      Sentence((' ', '-', '-', '>', ' '), Name("b"), Name("c"))
-      )
-    )
-
-  let derived = renameme0 a0 (Stamp.Stamp [|int64(0)|]) a1  (Stamp.Stamp [|int64(1)|])
-
-  //printfn "%f;%f" derived.truth.f derived.truth.c
-
-  printfn "numberOfDerived=%i" (Array.length derived)
-  printfn "derived=%A" derived
-
-
-
-  let r = new Reasoner(10, renameme0)
-
-  // add test task
-  let t5000 = Sentence((' ', '-', '-', '>', ' '), (Name "a"), (Name "b"))
-  let st = SparseTerm(Sdr.sdrZero, t5000)
-  let sentence = DualSentence(Truth.Value(0.5f, 0.5f), st)
-  let newTask = Task(sentence, INPUT, JUDGMENT, Stamp.Stamp([|r.stampCounter|]))
-  r.tasks.content.Add(newTask)
-
-  r.stampCounter <- r.stampCounter+int64(1);
-
-
-  // add test belief
-
-
-  let mutable concept0 = Concept(SparseTerm(Sdr.sdrZero, Name("b")))
-
-  concept0.beliefs.Add(Task(DualSentence(Truth.Value(0.5f, 0.5f), SparseTerm(Sdr.sdrZero, Sentence((' ', '-', '-', '>', ' '), (Name "b"), (Name "c")))), DERIVED, JUDGMENT, Stamp.Stamp([|r.stampCounter|])))
-
-
-  r.concepts.map_.Add(Name("b"), concept0)
-
-  r.stampCounter <- r.stampCounter+int64(1);
-
-
-  r.step
-
-  printfn "%i" r.tasks.content.Count
-
-
-  r.step
-
-  printfn "%i" r.tasks.content.Count
-
+  
