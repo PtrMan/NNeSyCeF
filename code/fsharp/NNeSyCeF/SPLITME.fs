@@ -3,41 +3,10 @@ module main
   open Truth
   open Term
   open Sdr
-
-
-  // we store a dual representation of SDR and a symbolic description of a Term
-  type SparseTerm = struct
-    val sdr : Sdr.Sdr
-    val term : Term
-
-    new(sdr_, term_) = {sdr=sdr_;term=term_}
-  end
-
-  // we store a dual representation of SDR and a symbolic description of a Term
-  type DualSentence = struct
-    val truth: Truth.Value
-
-    val termWithSdr: SparseTerm
-
-    // TODO< other stuff of sentence >
-
-    new(truth_: Truth.Value, termWithSdr_: SparseTerm) = { truth = truth_; termWithSdr=termWithSdr_ }
-  end
-
-
-  type SentenceDatabaseBySdr = struct
-    val dualSentences : DualSentence list
-  end
-
-  // TODO< let the tak scan the memory with each timeslice >
-  // (syncronously) queries the database for (dual) sentences which (symetrically) match the SDR
-  let queryDatabaseBySdr(db:SentenceDatabaseBySdr, query:Sdr.Sdr) =
-    // function which returns true if the SDR matches up
-    let filterFn(x:DualSentence) =
-      sdrCheckOverlap(x.termWithSdr.sdr, query)
-
-    List.filter filterFn db.dualSentences
-
+  
+  open Datastructures
+  open System.Collections.Generic
+  
 
   type EnumAddress =
     | LEFTPREDICATE
@@ -73,6 +42,13 @@ module main
     | RIGHTSUBJECT ->
       match right.term with
       | Sentence(_, s, _) -> s
+  
+
+  
+  type EnumBuildSetType =
+  | EXT
+  | INT
+  | NONE
 
 
   // derives a Sentence out of premise sentences
@@ -114,12 +90,6 @@ module main
       // return a intermediate structure to decouple the derivation
       Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
 
-
-
-  type EnumBuildSetType =
-  | EXT
-  | INT
-  | NONE
 
   let derivedProductSentence
     (leftStamp: Stamp.Stamp)
@@ -498,43 +468,7 @@ module main
 
 
 
-
-  // basic datastructures of NARS
-
-  type EnumTaskType =
-    | QUESTION
-    | JUDGMENT
-    //| GOAL
-    //| QUEST
-
-  type EnumTaskSource =
-  | INPUT
-  | DERIVED
-
-  type Task = struct
-    val mutable sentence: DualSentence
-
-    val source: EnumTaskSource
-
-    val type_: EnumTaskType
-
-    val stamp: Stamp.Stamp
-
-    new(sentence_:DualSentence, source_:EnumTaskSource, type__:EnumTaskType, stamp_:Stamp.Stamp) = {sentence=sentence_;source=source_;type_=type__;stamp=stamp_}
-  end
-
-  open System.Collections.Generic
-
-  type Concept = struct
-    // The term is the unique ID of the concept
-    val name: SparseTerm
-
-    // TODO< questions >
-
-    val mutable beliefs: List<Task>
-
-    new(name_:SparseTerm)={name=name_; beliefs = new List<Task>()}
-  end
+  
 
 
   // helper for the priority queue 
@@ -621,11 +555,15 @@ module main
     // function which is used for derivation
     val derivationFn: (DualSentence) -> (Stamp.Stamp) -> (DualSentence) -> (Stamp.Stamp) -> Derived[]
 
+    val mutable stampCounter : int64
+
     new(taskSelectionAmount_:int,derivationFn_)={
       concepts = new ConceptPriorityQueue 50;
       tasks=TaskPriorityQueue 50;
       taskSelectionAmount=10;
-      derivationFn=derivationFn_
+      derivationFn=derivationFn_;
+
+      stampCounter = int64(0)
     }
   
     // creates new concepts for all involved (sub)terms if they don't exist
@@ -849,14 +787,16 @@ module main
 
 
 
-  let r = new Reasoner 10
+  let r = new Reasoner(10, renameme0)
 
   // add test task
   let t5000 = Sentence((' ', '-', '-', '>', ' '), (Name "a"), (Name "b"))
   let st = SparseTerm(Sdr.sdrZero, t5000)
   let sentence = DualSentence(Truth.Value(0.5f, 0.5f), st)
-  let mutable newTask = Task(sentence, INPUT, JUDGMENT)
+  let newTask = Task(sentence, INPUT, JUDGMENT, Stamp.Stamp([|r.stampCounter|]))
   r.tasks.content.Add(newTask)
+
+  r.stampCounter <- r.stampCounter+int64(1);
 
 
   // add test belief
@@ -864,17 +804,20 @@ module main
 
   let mutable concept0 = Concept(SparseTerm(Sdr.sdrZero, Name("b")))
 
-  concept0.beliefs.Add(Task(DualSentence(Truth.Value(0.5f, 0.5f), SparseTerm(Sdr.sdrZero, Sentence((' ', '-', '-', '>', ' '), (Name "b"), (Name "c")))), DERIVED, JUDGMENT))
+  concept0.beliefs.Add(Task(DualSentence(Truth.Value(0.5f, 0.5f), SparseTerm(Sdr.sdrZero, Sentence((' ', '-', '-', '>', ' '), (Name "b"), (Name "c")))), DERIVED, JUDGMENT, Stamp.Stamp([|r.stampCounter|])))
 
 
   r.concepts.map_.Add(Name("b"), concept0)
 
-
-  r.step
-
-  printfn "%i" r.tasks.content.Count
+  r.stampCounter <- r.stampCounter+int64(1);
 
 
   r.step
 
   printfn "%i" r.tasks.content.Count
+
+
+  r.step
+
+  printfn "%i" r.tasks.content.Count
+
