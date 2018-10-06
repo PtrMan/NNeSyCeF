@@ -383,30 +383,21 @@ module main
   let add (queue: ConceptPriorityQueue) (element: Concept) =
     queue.content.Add(element)
 
-    printfn "ADD %A" (convToString element.name.term)
+    printfn "add concept =%A" (convToString element.name.term)
 
     queue.map_.Add(element.name.term, element)
 
-    printfn "HERE555"
-
   let queryByTerm (queue: ConceptPriorityQueue) (query: Term): Concept Option =
     match queue.map_.TryGetValue(query) with
-    | (True, x) -> Some x
-    | (False, _) -> None
-  
-    //let result = queue.map_.TryGetValue(query)
+    | (true, x) -> Some x
+    | (false, _) -> None
 
-    //printfn "%d" queue.map_.Count
-    //printfn "queryByTerm() res=%A" result
-
-    //result
 
   let has (queue: ConceptPriorityQueue) (query: Term) =
     match queue.map_.TryGetValue(query) with
-    | (True, x) -> True
-    | (False, _) -> False
+    | (true, x) -> true
+    | (false, _) -> false
   
-    //queue.map_.TryFind(query) <> None
 
 
   // returns n elements which have the highest priority
@@ -592,18 +583,6 @@ module main
         for i in derived do
           for j in i do
             let sparseTerm = SparseTerm(Sdr.sdrZero, j.term)
-
-            (* commented because refactoring was not tested
-            self.conceptualize sparseTerm
-
-            match self.concepts.map_.TryGetValue j.term with
-            | (True, v) ->
-              // add belief
-              v.beliefs.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT, j.stamp))
-
-              // add task
-              self.tasks.content.Add (Task(DualSentence(j.truth, SparseTerm(sdrZero, j.term)), DERIVED, JUDGMENT, j.stamp))
-             *)
             self.addJudgmentAsBeliefAndTask sparseTerm j.truth j.stamp
 
 
