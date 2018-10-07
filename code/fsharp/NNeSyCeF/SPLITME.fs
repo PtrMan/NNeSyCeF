@@ -648,6 +648,6 @@ module main
     let stamp = Stamp.Stamp([|r.stampCounter|])
     r.stampCounter <- r.stampCounter+int64(1);
 
-    r.addJudgmentAsBeliefAndTask sentence.termWithSdr sentence.truth stamp
+    r.addJudgmentAsBeliefAndTask (uint64 1) sentence.termWithSdr sentence.truth stamp
 
   
