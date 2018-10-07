@@ -1,3 +1,6 @@
+// TODO< attention machnism >
+// TODO< overhaul attention echnaism to use counter >
+
 module main
 
   open Term
