@@ -8,7 +8,9 @@
     val truth: Truth.Value
     val stamp: Stamp.Stamp
 
-    new(sdr_, term_, truth_, stamp_) = {sdr=sdr_; term=term_; truth=truth_; stamp=stamp_}
+    val finalObservationCount: uint64
+
+    new(finalObservationCount_, sdr_, term_, truth_, stamp_) = {finalObservationCount=finalObservationCount_;sdr=sdr_; term=term_; truth=truth_; stamp=stamp_}
   end
 
 
@@ -45,6 +47,8 @@
   // derives a Sentence out of premise sentences
   // with computing the coresponding SDR's
   let derivedSentence
+    (finalObservationCount: uint64)
+
     (leftStamp: Stamp.Stamp)
     (rightStamp: Stamp.Stamp)
 
@@ -79,10 +83,12 @@
       let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
 
       // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
+      Derived(finalObservationCount, derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
 
 
   let derivedProductSentence
+    (finalObservationCount: uint64)
+
     (leftStamp: Stamp.Stamp)
     (rightStamp: Stamp.Stamp)
 
@@ -120,4 +126,4 @@
       let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
 
       // return a intermediate structure to decouple the derivation
-      Derived(derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
+      Derived(finalObservationCount, derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)

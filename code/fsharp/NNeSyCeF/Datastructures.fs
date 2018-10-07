@@ -34,13 +34,27 @@ module Datastructures
   type Task = struct
     val mutable sentence: DualSentence
 
+    // was the input task observed and account for by the ATTENTION mechanism?
+    val mutable wasObserved: bool
+
+    // how ofter was the belief observed
+    val mutable observationCount: uint64
+
     val source: EnumTaskSource
 
     val type_: EnumTaskType
 
     val stamp: Stamp.Stamp
+    
 
-    new(sentence_:DualSentence, source_:EnumTaskSource, type__:EnumTaskType, stamp_:Stamp.Stamp) = {sentence=sentence_;source=source_;type_=type__;stamp=stamp_}
+    new(sentence_:DualSentence, source_:EnumTaskSource, type__:EnumTaskType, stamp_:Stamp.Stamp) = {
+      sentence=sentence_;
+      source=source_;
+      type_=type__;
+      stamp=stamp_;
+      wasObserved=false;
+      observationCount=uint64(1)
+    }
   end
 
   open System.Collections.Generic

@@ -1,13 +1,27 @@
-﻿[<EntryPoint>]
+﻿open System
+
+let mutable rng = Random()
+
+let randomAlphanumericString() =
+    let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    seq {
+        for i in {0..7} do
+            yield chars.[rng.Next(chars.Length)]
+    } |> Seq.toArray |> (fun x -> new String(x))
+
+[<EntryPoint>]
 let main argv = 
   
   let r = new main.Reasoner(10, main.derive)
 
-  let sentence = Datastructures.DualSentence(Truth.Value(0.5f, 0.5f), Datastructures.SparseTerm(Sdr.sdrZero, Term.Sentence((' ', '-', '-', '>', ' '), (Term.Name "b"), (Term.Name "c"))))
+  for i in 0 .. 10000000 do
 
-  main.addJudgement r sentence
+    let sentence = Datastructures.DualSentence(Truth.Value(0.5f, 0.5f), Datastructures.SparseTerm(Sdr.sdrZero, Term.Sentence((' ', '-', '-', '>', ' '), (Term.Name (randomAlphanumericString())), (Term.Name (randomAlphanumericString())))))
+
+    main.addJudgement r sentence
   
-  r.step
+    r.step
+
   r.step
   r.step
   r.step
