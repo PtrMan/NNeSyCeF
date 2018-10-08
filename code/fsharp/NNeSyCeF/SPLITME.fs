@@ -1,5 +1,6 @@
 // TODO< attention machnism >
 // TODO< overhaul attention echnaism to use counter >
+// TODO< order beliefs of concept by confidence ! >
 
 module main
 
