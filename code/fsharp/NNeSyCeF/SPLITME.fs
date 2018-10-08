@@ -347,6 +347,143 @@ module main
 
 
 
+
+
+
+        | Sentence((' ', '=', '=', '>', ' '), s0, p0), Sentence((' ', '=', '=', '>', ' '), p1, s1)
+          when s0 = s1 && p0 = p1 && s0 <> p0
+            ->
+              // ; //// implication to equivalence ////////////////////////////////////////////////////////////////////////////////////
+              // ;//If when S happens, P happens, and before P happens, S has happened, then they are truth-related equivalent
+              // #R[(S ==> P) (P ==> S) |- (S <=> P) :post (:t/intersection :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '=', '=', '>', ' ') LEFTPREDICATE  "intersection" "?" |]
+        
+        | Sentence((' ', '=', '|', '>', ' '), s0, p0), Sentence((' ', '=', '|', '>', ' '), p1, s1)
+          when s0 = s1 && p0 = p1 && s0 <> p0
+            ->
+              // ; //// implication to equivalence ////////////////////////////////////////////////////////////////////////////////////
+              // ;//If when S happens, P happens, and before P happens, S has happened, then they are truth-related equivalent
+              // #R[(S =|> P) (P =|> S) |- (S <|> P) :post (:t/intersection :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '=', '|', '>', ' ') LEFTPREDICATE  "intersection" "?" |]
+    
+        | Sentence((' ', '=', '/', '>', ' '), s0, p0), Sentence((' ', '=', '\\', '>', ' '), p1, s1)
+          when s0 = s1 && p0 = p1 && s0 <> p0
+            ->
+              // ; //// implication to equivalence ////////////////////////////////////////////////////////////////////////////////////
+              // ;//If when S happens, P happens, and before P happens, S has happened, then they are truth-related equivalent
+              // #R[(S =/> P) (P =\> S) |- (S </> P) :post (:t/intersection :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '/', '<', '>', ' ') LEFTPREDICATE  "intersection" "?" |]
+
+
+        | Sentence((' ', '=', '\\', '>', ' '), s0, p0), Sentence((' ', '=', '/', '>', ' '), p1, s1)
+          when s0 = s1 && p0 = p1 && s0 <> p0
+            ->
+              // ; //// implication to equivalence ////////////////////////////////////////////////////////////////////////////////////
+              // ;//If when S happens, P happens, and before P happens, S has happened, then they are truth-related equivalent
+              // #R[(S =\> P) (P =/> S) |- (S </> P) :post (:t/intersection :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '/', '<', '>', ' ') LEFTPREDICATE  "intersection" "?" |]
+
+
+
+
+
+
+        | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '=', '=', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              //; equivalence-based syllogism
+              //; Same as for inheritance again
+              // #R[(P ==> M) (S ==> M) |- (S <=> P) :pre ((:!= S P)) :post (:t/comparison :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+        
+        | Sentence((' ', '=', '/', '>', ' '), p, m0), Sentence((' ', '=', '/', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              //; equivalence-based syllogism
+              //; Same as for inheritance again
+              // #R[(P =/> M) (S =/> M) |- ((S <|> P) :post (:t/comparison :allow-backward)
+              //                            (S </> P) :post (:t/comparison :allow-backward)
+              //                            (P </> S) :post (:t/comparison :allow-backward))
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '|', '<', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '<', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '/', '<', '>', ' ') RIGHTSUBJECT  "comparison" "?" |]
+
+
+        | Sentence((' ', '=', '|', '>', ' '), p, m0), Sentence((' ', '=', '|', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              //; equivalence-based syllogism
+              //; Same as for inheritance again
+              // #R[(P =|> M) (S =|> M) |- (S <|> P) :pre ((:!= S P)) :post (:t/comparison :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '|', '<', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+        
+        | Sentence((' ', '=', '\\', '>', ' '), p, m0), Sentence((' ', '=', '\\', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              //; equivalence-based syllogism
+              //; Same as for inheritance again
+              // #R[(P =\> M) (S =\> M) |- ((S <|> P) :post (:t/comparison :allow-backward)
+              //                            (S </> P) :post (:t/comparison :allow-backward)
+              //                            (P </> S) :post (:t/comparison :allow-backward))
+              // :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '|', '<', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '<', '>', ' ') LEFTSUBJECT  "comparison" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '/', '<', '>', ' ') RIGHTSUBJECT  "comparison" "?" |]
+
+
+        
+
+        | Sentence((' ', '=', '=', '>', ' '), m0, p), Sentence((' ', '=', '=', '>', ' '), m1, s)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M ==> P) (M ==> S) |- (S <=> P) :pre ((:!= S P)) :post (:t/comparison :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '<', '>', ' ') LEFTPREDICATE  "comparision" "?" |]
+        
+        | Sentence((' ', '/', '=', '>', ' '), m0, p), Sentence((' ', '/', '=', '>', ' '), m1, s)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =/> P) (M =/> S) |- ((S <|> P) :post (:t/comparison :allow-backward)
+              //                            (S </> P) :post (:t/comparison :allow-backward)
+              //                            (P </> S) :post (:t/comparison :allow-backward))
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '|', '<', '>', ' ') LEFTPREDICATE  "comparision" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '/', '<', '>', ' ') LEFTPREDICATE  "comparision" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTPREDICATE (' ', '/', '<', '>', ' ') RIGHTPREDICATE  "comparision" "?" |]
+        
+        | Sentence((' ', '|', '=', '>', ' '), m0, p), Sentence((' ', '|', '=', '>', ' '), m1, s)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =|> P) (M =|> S) |- (S <|> P) :pre ((:!= S P)) :post (:t/comparison :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '|', '<', '>', ' ') LEFTPREDICATE  "comparision" "?" |]
+        
+
+
+
+
+
+        // TODO
+
+        (*
+        ; Same as for inheritance again
+          #R[(M ==> P) (S <=> M) |- (S ==> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(M =/> P) (S </> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(M =/> P) (S <|> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(M =|> P) (S <|> M) |- (S =|> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(M =\> P) (M </> S) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(M =\> P) (S <|> M) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+
+          #R[(P ==> M) (S <=> M) |- (P ==> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(P =/> M) (S <|> M) |- (P =/> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(P =|> M) (S <|> M) |- (P =|> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(P =\> M) (S </> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+          #R[(P =\> M) (S <|> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+
+          #R[(M <=> P) (S <=> M) |- (S <=> P) :pre ((:!= S P)) :post (:t/resemblance :order-for-all-same :allow-backward)]
+          #R[(M </> P) (S <|> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
+          #R[(M <|> P) (S </> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
+        
+        *)
+
+
     deriveTasks
     deriveTasks2
     deriveTasks3
