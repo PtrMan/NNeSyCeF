@@ -1,6 +1,7 @@
 // TODO< attention machnism >
 // TODO< overhaul attention echnaism to use counter >
 // TODO< order beliefs of concept by confidence ! >
+// TODO< bias system to favor to forget tasks with complex sentences >
 
 module main
 
@@ -14,13 +15,13 @@ module main
 
   // done rules
   //     nal1-nal2-inheritance-related-syllogisms
+  //     nal5-implication-based-syllogisms
   // half done
   //     nal1-nal2-nal3-equivalence-and-implication
   //          (just a few and a lot s commented because we haven't worked out a good representation for sets)
   //     nal4-structural-inference
   //          (last part is done)
-  //     nal5-implication-based-syllogisms
-  //          (first easy part is done)
+
 
   let derive (taskA:Task) (taskB:Task) =
     let (premiseA: DualSentence) = taskA.sentence
@@ -460,28 +461,97 @@ module main
 
 
 
-        // TODO
 
-        (*
-        ; Same as for inheritance again
-          #R[(M ==> P) (S <=> M) |- (S ==> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(M =/> P) (S </> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(M =/> P) (S <|> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(M =|> P) (S <|> M) |- (S =|> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(M =\> P) (M </> S) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(M =\> P) (S <|> M) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-
-          #R[(P ==> M) (S <=> M) |- (P ==> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(P =/> M) (S <|> M) |- (P =/> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(P =|> M) (S <|> M) |- (P =|> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(P =\> M) (S </> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-          #R[(P =\> M) (S <|> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-
-          #R[(M <=> P) (S <=> M) |- (S <=> P) :pre ((:!= S P)) :post (:t/resemblance :order-for-all-same :allow-backward)]
-          #R[(M </> P) (S <|> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
-          #R[(M <|> P) (S </> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
+        | Sentence((' ', '=', '=', '>', ' '), m0, p), Sentence((' ', '=', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M ==> P) (S <=> M) |- (S ==> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '<', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
         
-        *)
+        | Sentence((' ', '/', '=', '>', ' '), m0, p), Sentence((' ', '/', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =/> P) (S </> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+
+        | Sentence((' ', '/', '=', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =/> P) (S <|> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+
+        | Sentence((' ', '|', '=', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =|> P) (S <|> M) |- (S =|> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '|', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+
+        | Sentence((' ', '\\', '=', '>', ' '), m0, p), Sentence((' ', '/', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =\> P) (M </> S) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '\\', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+
+        | Sentence((' ', '\\', '=', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M =\> P) (S <|> M) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '\\', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+
+
+
+        | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '=', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(P ==> M) (S <=> M) |- (P ==> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '=', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+
+
+        | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(P =/> M) (S <|> M) |- (P =/> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '/', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+
+        | Sentence((' ', '|', '=', '>', ' '), p, m0), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(P =|> M) (S <|> M) |- (P =|> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '|', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+
+        | Sentence((' ', '\\', '=', '>', ' '), p, m0), Sentence((' ', '/', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(P =\> M) (S </> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '\\', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+        
+        | Sentence((' ', '\\', '=', '>', ' '), p, m0), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(P =\> M) (S <|> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '\\', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+
+
+        | Sentence((' ', '=', '<', '>', ' '), m0, p), Sentence((' ', '=', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M <=> P) (S <=> M) |- (S <=> P) :pre ((:!= S P)) :post (:t/resemblance :order-for-all-same :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '<', '>', ' ') LEFTPREDICATE  "resemblance" "?" |]
+        
+        | Sentence((' ', '/', '<', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M </> P) (S <|> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '<', '>', ' ') LEFTPREDICATE  "resemblance" "?" |]
+        
+        | Sentence((' ', '|', '<', '>', ' '), m0, p), Sentence((' ', '/', '<', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              // #R[(M <|> P) (S </> M) |- (S </> P) :pre ((:!= S P)) :post (:t/resemblance :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '<', '>', ' ') LEFTPREDICATE  "resemblance" "?" |]
+
+
+
 
 
     deriveTasks
