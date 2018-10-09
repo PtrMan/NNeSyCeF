@@ -116,6 +116,8 @@ module Truth
     "revision",  revision;
     "analogy",  analogy
     // TODO  resemblance
+    // TODO  contraposition
+    // TODO  negation
     ]
   
   let rec calcBinaryTruth(fn:string) (v1:Value) (v2:Value) =

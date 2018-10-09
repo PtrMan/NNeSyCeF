@@ -16,12 +16,13 @@ module main
   // done rules
   //     nal1-nal2-inheritance-related-syllogisms
   //     nal5-implication-based-syllogisms
+  //     nal1-nal5-conversion-contraposition-negation  (only forward inference)
   // half done
   //     nal1-nal2-nal3-equivalence-and-implication
   //          (just a few and a lot s commented because we haven't worked out a good representation for sets)
   //     nal4-structural-inference
   //          (last part is done)
-
+  // TODO< all backward inference rules >
 
   let derive (taskA:Task) (taskB:Task) =
     let (premiseA: DualSentence) = taskA.sentence
@@ -554,9 +555,109 @@ module main
 
 
 
+    let deriveTasksNegation = match leftTerm, rightTerm with
+
+      | Sentence((' ', '=', d, '>', ' '), Negation(s), p0), p1
+        when p0 = p1
+          ->
+            // ;; Contraposition
+            // #R[(--S =d> P) P |- (--P =d> S) :post (:t/contraposition :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   true LEFTPREDICATE (' ', '=', d, '>', ' ') false LEFTSUBJECT  "contraposition" "?" |]
+       
+      | Sentence((' ', '=', d, '>', ' '), Negation(s0), p), Negation(s1)
+        when s0 = s1
+          ->
+            // ;; Contraposition
+            // #R[(--S =d> P) --S |- (--P =d> S) :post (:t/contraposition :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   true LEFTPREDICATE (' ', '=', d, '>', ' ') false LEFTSUBJECT  "contraposition" "?" |]
+      
+
+
+      | Sentence((' ', '-', d, '>', ' '), a0, b), a1
+        when a0 = a1
+          ->
+            // #R[(A -d> B) A |- --(A -d> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', d, '-', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Sentence((' ', '-', d, '>', ' '), a, b0), b1
+        when b0 = b1
+          ->
+            // #R[(A -d> B) B |- --(A -d> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', d, '-', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+
+      | Negation(Sentence((' ', '-', d, '>', ' '), a0, b)), a1
+        when a0 = a1
+          ->
+            // #R[--(A -d> B) A |- (A -d> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', d, '-', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Negation(Sentence((' ', '-', d, '>', ' '), a, b0)), b1
+        when b0 = b1
+          ->
+            // #R[--(A -d> B) B |- (A -d> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', d, '-', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+
+      | Sentence((' ', '=', '=', '>', ' '), a0, b), a1
+        when a0 = a1
+          ->
+            // #R[(A ==> B) A |- --(A ==> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', '=', '=', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Sentence((' ', '=', '=', '>', ' '), a, b0), b1
+        when b0 = b1
+          ->
+            // #R[(A ==> B) B |- --(A ==> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', '=', '=', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+
+      | Negation(Sentence((' ', '=', '=', '>', ' '), a0, b)), a1
+        when a0 = a1
+          ->
+            // #R[--(A ==> B) A |- (A ==> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', '=', '=', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Negation(Sentence((' ', '=', '=', '>', ' '), a, b0)), b1
+        when b0 = b1
+          ->
+            // #R[--(A ==> B) B |- (A ==> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', '=', '=', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+
+
+      | Sentence((' ', '=', '<', '>', ' '), a0, b), a1
+        when a0 = a1
+          ->
+            // #R[(A <=> B) A |- --(A <=> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', '=', '<', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Sentence((' ', '=', '<', '>', ' '), a, b0), b1
+        when b0 = b1
+          ->
+            // #R[(A <=> B) B |- --(A <=> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   true   false LEFTSUBJECT (' ', '=', '<', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+
+      | Negation(Sentence((' ', '=', '<', '>', ' '), a0, b)), a1
+        when a0 = a1
+          ->
+            // #R[--(A <=> B) A |- (A <=> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', '=', '<', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+      
+      | Negation(Sentence((' ', '=', '<', '>', ' '), a, b0)), b1
+        when b0 = b1
+          ->
+            // #R[--(A <=> B) B |- (A <=> B) :post (:t/negation :d/negation :allow-backward)]
+            derived <- Array.append derived [| derivedSentenceNegation finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   false   false LEFTSUBJECT (' ', '=', '<', '>', ' ') false LEFTPREDICATE  "negation" "negation" |]
+
+
+
+
     deriveTasks
     deriveTasks2
     deriveTasks3
+    deriveTasksNegation
 
     derived
 

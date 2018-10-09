@@ -13,6 +13,7 @@
   | Name of string
   | Sentence of FusedCopula * Term * Term
   | Set of EnumSetType * Term[]
+  | Negation of Term // narsese: --
 
 
 
