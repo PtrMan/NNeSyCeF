@@ -46,7 +46,11 @@
 
   // derives a Sentence out of premise sentences
   // with computing the coresponding SDR's
-  let derivedSentence
+  let derivedSentenceNegation
+    (negateConclusion:bool)
+    (negateLeftPremise:bool)
+    (negateRightPremise:bool)
+
     (finalObservationCount: uint64)
 
     (leftStamp: Stamp.Stamp)
@@ -84,7 +88,8 @@
 
       // return a intermediate structure to decouple the derivation
       Derived(finalObservationCount, derivedSdr, conclusionSentenceTerm, conclusionTruth, Stamp.merge leftStamp rightStamp)
-
+  
+  let derivedSentence = derivedSentenceNegation false false false
 
   let derivedProductSentence
     (finalObservationCount: uint64)
