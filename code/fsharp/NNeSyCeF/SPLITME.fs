@@ -322,13 +322,13 @@ module main
               *)
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
         
-        | Sentence((' ', '=', '\\', '>', ' '), m0, p), Sentence((' ', '=', '\\', '>', ' '), m1, s)
+        | Sentence((' ', '=', '/', '>', ' '), p, m0), Sentence((' ', '=', '/', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
               (*
-              #R[(M =\> P) (M =\> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
+              #R[(P =/> M) (S =/> M) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
               *)
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '|', '>', ' ') LEFTSUBJECT  "abduction" "?" |]
 
 
         | Sentence((' ', '=', '=', '>', ' '), p, m0), Sentence((' ', '=', '=', '>', ' '), s, m1)
