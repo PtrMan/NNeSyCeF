@@ -314,11 +314,18 @@ module main
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
 
         | Sentence((' ', '=', c0, '>', ' '), m0, p), Sentence((' ', '=', c1, '>', ' '), m1, s)
-          when m0 = m1 && s <> p && checkCopula1 c0 c1
+          when m0 = m1 && s <> p && (c0 && c1 && (c0 = '/' || c0 = '|'))
             ->
               (*
               #R[(M =/> P) (M =/> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
               #R[(M =|> P) (M =|> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
+              *)
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
+        
+        | Sentence((' ', '=', '\\', '>', ' '), m0, p), Sentence((' ', '=', '\\', '>', ' '), m1, s)
+          when m0 = m1 && s <> p
+            ->
+              (*
               #R[(M =\> P) (M =\> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
               *)
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '|', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
