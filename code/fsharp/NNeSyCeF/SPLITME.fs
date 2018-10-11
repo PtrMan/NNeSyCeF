@@ -521,17 +521,17 @@ module main
               // #R[(P =|> M) (S <|> M) |- (P =|> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '|', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
 
-        | Sentence((' ', '\\', '=', '>', ' '), p, m0), Sentence((' ', '/', '<', '>', ' '), s, m1)
+        | Sentence((' ', '/', '=', '>', ' '), m0, p), Sentence((' ', '/', '<', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
-              // #R[(P =\> M) (S </> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '\\', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+              // #R[(M =/> P) (S </> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
         
-        | Sentence((' ', '\\', '=', '>', ' '), p, m0), Sentence((' ', '|', '<', '>', ' '), s, m1)
+        | Sentence((' ', '/', '=', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
-              // #R[(P =\> M) (S <|> M) |- (P =\> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '\\', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
+              // #R[(M =/> P) (S <|> M) |- (S =/> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '/', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
 
 
         | Sentence((' ', '=', '<', '>', ' '), m0, p), Sentence((' ', '=', '<', '>', ' '), s, m1)
