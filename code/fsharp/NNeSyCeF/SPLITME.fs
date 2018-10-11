@@ -733,15 +733,22 @@ module main
 
     result
   
-  // adds a belief and maintains the confidence
+  // adds a belief and maintains the confidence order
   let addBelief (beliefCount:int) (concept:Concept) (belief:Task) =
-    concept.beliefs.Add belief
-
-    // order beliefs of concept by confidence !
-    List.sortBy (fun (task:Task) -> task.sentence.truth.c) concept.beliefs
+    let mutable wasInserted = false
+    let mutable idx = 0
+    while idx < concept.beliefs.Count && not wasInserted do
+      if concept.beliefs.[idx].sentence.truth.c < belief.sentence.truth.c then
+        concept.beliefs.Insert (idx, belief)
+        wasInserted <- true
+      
+      idx <- idx + 1
     
+    if not wasInserted then
+      concept.beliefs.Add belief
+
     // limit length
-    while List.length concept.beliefs > beliefCount do
+    while concept.beliefs.Count > beliefCount do
       concept.beliefs.RemoveAt beliefCount
   
 
@@ -760,7 +767,6 @@ module main
 
     val mutable stampCounter : int64
 
-    val addBeliefFn: (concept:Concept) -> (belief:Task)
 
     new(taskSelectionAmount_:int,derivationFn_)={
       concepts = new ConceptPriorityQueue 50;
@@ -768,11 +774,7 @@ module main
       taskSelectionAmount=10;
       derivationFn=derivationFn_;
 
-      stampCounter = int64(0);
-      
-      let numberOfBeliefs = 100
-
-      addBeliefFn = addBelief numberOfBeliefs
+      stampCounter = int64(0)
     }
 
     // public just for ease of adding functionality
@@ -782,14 +784,15 @@ module main
       match self.concepts.map_.TryGetValue sparseTerm.term with
       | (True, v) ->
         // add belief
-        let beliefTask = Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp)
+        let beliefTask = Task(DualSentence(truth, SparseTerm(Sdr.zero, sparseTerm.term)), DERIVED, JUDGMENT, stamp)
         beliefTask.observationCount = observationCount
 
         //v.beliefs.Add beliefTask   commented because old code
-        self.addBeliefFn v beliefTask
+        let addBeliefFn = addBelief 100
+        addBeliefFn v beliefTask
 
         // add task
-        self.tasks.content.Add (Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
+        self.tasks.content.Add (Task(DualSentence(truth, SparseTerm(Sdr.zero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
   
     // creates new concepts for all involved (sub)terms if they don't exist
     //
@@ -799,7 +802,7 @@ module main
         if not (has self.concepts current) then
           //printfn "DOESNT HAVE concept for %s" (convToString current)
 
-          let mutable c = Concept(SparseTerm(sdrZero, current))
+          let mutable c = Concept(SparseTerm(Sdr.zero, current))
         
           add self.concepts c
           |> ignore
@@ -953,7 +956,7 @@ module main
         // TODO< refactor >
         for i in derived do
           for j in i do
-            let sparseTerm = SparseTerm(Sdr.sdrZero, j.term)
+            let sparseTerm = SparseTerm(Sdr.zero, j.term)
             self.addJudgmentAsBeliefAndTask j.finalObservationCount sparseTerm j.truth j.stamp
 
 

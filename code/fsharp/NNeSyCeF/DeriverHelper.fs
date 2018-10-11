@@ -75,7 +75,7 @@
       // TODO< demangle right side of SDR >
 
       // TODO< build result SDR >
-      let derivedSdr = Sdr.sdrZero
+      let derivedSdr = Sdr.zero
 
 
 
@@ -122,7 +122,7 @@
     (truthFn:string)
     (attentionFn:string) =
       // TODO< build result SDR >
-      let derivedSdr = Sdr.sdrZero
+      let derivedSdr = Sdr.zero
 
 
       // TODO< build result >

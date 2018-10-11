@@ -16,7 +16,7 @@ let main argv =
 
   for i in 0 .. 10000000 do
 
-    let sentence = Datastructures.DualSentence(Truth.Value(0.5f, 0.5f), Datastructures.SparseTerm(Sdr.sdrZero, Term.Sentence((' ', '-', '-', '>', ' '), (Term.Name (randomAlphanumericString())), (Term.Name (randomAlphanumericString())))))
+    let sentence = Datastructures.DualSentence(Truth.Value(0.5f, 0.5f), Datastructures.SparseTerm(Sdr.zero, Term.Sentence((' ', '-', '-', '>', ' '), (Term.Name (randomAlphanumericString())), (Term.Name (randomAlphanumericString())))))
 
     main.addJudgement r sentence
   
