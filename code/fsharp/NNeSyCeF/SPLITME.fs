@@ -752,6 +752,8 @@ module main
       concept.beliefs.RemoveAt beliefCount
   
 
+
+
   // TODO< ATTENTION < overhaul observation counting mechanism (and revision)   > >
 
   type Reasoner = class
@@ -763,18 +765,21 @@ module main
     val taskSelectionAmount: int
 
     // function which is used for derivation
-    val derivationFn: (Task) -> (Task) -> Derived[]
+    val derivationFn: Task -> Task -> Derived[]
 
     val mutable stampCounter : int64
+    
+    val questionAnswerHandlers: (Concept -> Task -> unit)[]
 
-
-    new(taskSelectionAmount_:int,derivationFn_)={
+    new(taskSelectionAmount_:int,derivationFn_, questionAnswerHandlers_)={
       concepts = new ConceptPriorityQueue 50;
       tasks=TaskPriorityQueue 50;
       taskSelectionAmount=10;
       derivationFn=derivationFn_;
 
-      stampCounter = int64(0)
+      stampCounter = int64(0);
+
+      questionAnswerHandlers=questionAnswerHandlers_;
     }
 
     // public just for ease of adding functionality
@@ -782,18 +787,34 @@ module main
       self.conceptualize sparseTerm
 
       match self.concepts.map_.TryGetValue sparseTerm.term with
-      | (True, v) ->
+      | (True, iConcept) ->
         // add belief
         let beliefTask = Task(DualSentence(truth, SparseTerm(Sdr.zero, sparseTerm.term)), DERIVED, JUDGMENT, stamp)
         beliefTask.observationCount = observationCount
 
-        //v.beliefs.Add beliefTask   commented because old code
+        //iConcept.beliefs.Add beliefTask   commented because old code
         let addBeliefFn = addBelief 100
-        addBeliefFn v beliefTask
+        addBeliefFn iConcept beliefTask
 
         // add task
         self.tasks.content.Add (Task(DualSentence(truth, SparseTerm(Sdr.zero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
-  
+      
+        ignore
+      | _ -> ignore
+    
+    // calls Question answering handlers
+    member self.questionAnswering (belief:Task) =
+      let term = belief.sentence.termWithSdr.term
+
+      match self.concepts.map_.TryGetValue term with
+      | (True, iConcept) ->
+      
+        for iHandler in self.questionAnswerHandlers do
+          iHandler (iConcept) (belief)
+        
+        ignore
+      | _ -> ignore
+
     // creates new concepts for all involved (sub)terms if they don't exist
     //
     // public for testing
@@ -957,8 +978,11 @@ module main
         for i in derived do
           for j in i do
             let sparseTerm = SparseTerm(Sdr.zero, j.term)
-            self.addJudgmentAsBeliefAndTask j.finalObservationCount sparseTerm j.truth j.stamp
+            let createdBelief = Task(DualSentence(j.truth, SparseTerm(Sdr.zero, sparseTerm.term)), DERIVED, JUDGMENT, j.stamp)
 
+            self.addJudgmentAsBeliefAndTask j.finalObservationCount sparseTerm j.truth j.stamp
+            // try to answer questions with new belief
+            self.questionAnswering createdBelief
 
       let deriveTasks = match task.type_ with
       | JUDGMENT -> processJudgment()

@@ -12,7 +12,7 @@ let randomAlphanumericString() =
 [<EntryPoint>]
 let main argv = 
   
-  let r = new main.Reasoner(10, main.derive)
+  let r = new main.Reasoner(10, main.derive, [||])
 
   for i in 0 .. 10000000 do
 
