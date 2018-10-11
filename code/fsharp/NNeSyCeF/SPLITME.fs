@@ -491,14 +491,14 @@ module main
         | Sentence((' ', '\\', '=', '>', ' '), m0, p), Sentence((' ', '/', '<', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
-              // #R[(M =\> P) (M </> S) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '\\', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+              // #R[(M =\> P) (M </> S) |- (P =/> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTPREDICATE (' ', '/', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
 
         | Sentence((' ', '\\', '=', '>', ' '), m0, p), Sentence((' ', '|', '<', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
-              // #R[(M =\> P) (S <|> M) |- (S =\> P) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '\\', '=', '>', ' ') LEFTPREDICATE  "analogy" "?" |]
+              // #R[(M =\> P) (S <|> M) |- (P =/> S) :pre ((:!= S P)) :post (:t/analogy :allow-backward)]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTPREDICATE (' ', '/', '=', '>', ' ') RIGHTSUBJECT  "analogy" "?" |]
 
 
 
