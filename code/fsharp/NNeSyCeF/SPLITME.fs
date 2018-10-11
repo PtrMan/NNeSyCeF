@@ -333,14 +333,14 @@ module main
         | Sentence((' ', '=', '/', '>', ' '), p, m0), Sentence((' ', '=', '/', '>', ' '), s, m1)
           when m0 = m1 && s <> p
             ->
-              // #R[(P =/> M) (M =/> S) |- (S =\> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '\\', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              // #R[(P =/> M) (M =/> S) |- (P =/> S) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   LEFTSUBJECT (' ', '=', '/', '>', ' ') RIGHTPREDICATE  "exemplification" "?" |]
       
-        | Sentence((' ', '=', '\\', '>', ' '), p, m0), Sentence((' ', '=', '\\', '>', ' '), s, m1)
+        | Sentence((' ', '=', '/', '>', ' '), m0, p), Sentence((' ', '=', '/', '>', ' '), m1, s)
           when m0 = m1 && s <> p
             ->
-              // #R[(P =\> M) (M =\> S) |- (S =/> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
-              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '/', '>', ' ') LEFTSUBJECT  "exemplification" "?" |]
+              // #R[(M =/> P) (S =/> M) |- (S =/> P) :post (:t/exemplification :allow-backward) :pre ((:!= S P))]
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '/', '>', ' ') LEFTPREDICATE  "exemplification" "?" |]
       
         | Sentence((' ', '=', '|', '>', ' '), p, m0), Sentence((' ', '=', '|', '>', ' '), s, m1)
           when m0 = m1 && s <> p
