@@ -1,6 +1,5 @@
 // TODO< attention machnism >
 // TODO< overhaul attention echnaism to use counter >
-// TODO< order beliefs of concept by confidence ! >
 // TODO< bias system to favor to forget tasks with complex sentences >
 
 module main
@@ -23,6 +22,8 @@ module main
   //     nal4-structural-inference
   //          (last part is done)
   // TODO< all backward inference rules >
+
+  // TODO< generalize inheritance rules to the proper inference with sets! >
 
   let derive (taskA:Task) (taskB:Task) =
     let (premiseA: DualSentence) = taskA.sentence
@@ -732,7 +733,19 @@ module main
 
     result
   
-  // TODO< ATTENTION < overhaul obersation counting mechanism (and revision)   > >
+  // adds a belief and maintains the confidence
+  let addBelief (beliefCount:int) (concept:Concept) (belief:Task) =
+    concept.beliefs.Add belief
+
+    // order beliefs of concept by confidence !
+    List.sortBy (fun (task:Task) -> task.sentence.truth.c) concept.beliefs
+    
+    // limit length
+    while List.length concept.beliefs > beliefCount do
+      concept.beliefs.RemoveAt beliefCount
+  
+
+  // TODO< ATTENTION < overhaul observation counting mechanism (and revision)   > >
 
   type Reasoner = class
     // TODO< pull into attention system >
@@ -747,13 +760,19 @@ module main
 
     val mutable stampCounter : int64
 
+    val addBeliefFn: (concept:Concept) -> (belief:Task)
+
     new(taskSelectionAmount_:int,derivationFn_)={
       concepts = new ConceptPriorityQueue 50;
       tasks=TaskPriorityQueue 50;
       taskSelectionAmount=10;
       derivationFn=derivationFn_;
 
-      stampCounter = int64(0)
+      stampCounter = int64(0);
+      
+      let numberOfBeliefs = 100
+
+      addBeliefFn = addBelief numberOfBeliefs
     }
 
     // public just for ease of adding functionality
@@ -766,7 +785,8 @@ module main
         let beliefTask = Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp)
         beliefTask.observationCount = observationCount
 
-        v.beliefs.Add beliefTask
+        //v.beliefs.Add beliefTask   commented because old code
+        self.addBeliefFn v beliefTask
 
         // add task
         self.tasks.content.Add (Task(DualSentence(truth, SparseTerm(sdrZero, sparseTerm.term)), DERIVED, JUDGMENT, stamp))
