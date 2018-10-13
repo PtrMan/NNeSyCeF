@@ -1,5 +1,6 @@
 // TODO< refactor Q&A mess >
 // TODO< add questions to tasks for new questions >
+// TODO< selection rule if revision cant be done >
 
 // TODO< attention mechanism >
 // TODO< overhaul attention echnaism to use counter >
@@ -1017,6 +1018,12 @@ module main
 
 
   let addJudgement (r:Reasoner) (sentence:DualSentence) =
+    // we need to have a minimal and maximal confidence because 0.0 and 1.0 are not allowed
+    // (see NAL-Specification   11.1 Narsese grammar and semantics) 
+    let CONFIDENCE_EPSILON = 0.0000001f
+    let c = sentence.truth.c |> min (1.0f - CONFIDENCE_EPSILON) |> max CONFIDENCE_EPSILON
+    let sentence = DualSentence(Truth.Value(sentence.truth.f, c), sentence.termWithSdr)
+
     //printfn "addJudgment %s" (convToString sentence.termWithSdr.term)
     
     let stamp = Stamp.Stamp([|r.stampCounter|])
