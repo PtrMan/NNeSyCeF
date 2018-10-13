@@ -59,13 +59,29 @@ module Datastructures
 
   open System.Collections.Generic
 
+  type Question = struct
+    val task: Task
+
+    // For Question and Goal: best solution found so far
+    val mutable bestSolution : DualSentence option
+
+    new(task_) = {
+      task=task_;
+      bestSolution=None
+    }
+  end
+
   type Concept = struct
     // The term is the unique ID of the concept
     val name: SparseTerm
 
-    // TODO< questions >
-
     val mutable beliefs: List<Task>
 
-    new(name_:SparseTerm)={name=name_; beliefs = new List<Task>()}
+    val mutable questions: Question[]
+
+    new(name_:SparseTerm) = {
+      name=name_;
+      beliefs = new List<Task>();
+      questions = [||]
+    }
   end

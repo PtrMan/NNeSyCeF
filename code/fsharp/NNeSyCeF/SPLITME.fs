@@ -1037,3 +1037,20 @@ module main
     printfn "Q&A"
     printfn "term: %s" (convToString judgmentSentence.termWithSdr.term)
     printfn "concept: %s" (convToString c.name.term)
+    
+    for iQuestionIdx in 0..(Array.length c.questions) do
+      let iQuestion = c.questions.[iQuestionIdx]
+
+      if iQuestion.task.sentence.termWithSdr.term = judgmentSentence.termWithSdr.term then
+        // is a better answer if it is the only answer or if confidence is higher
+        let isJudgmentBetterAnswer = match iQuestion.bestSolution with
+        | None ->
+          true
+        | Some (answer) ->
+          judgmentSentence.truth.c > answer.truth.c 
+        
+        if isJudgmentBetterAnswer then
+          // TODO< report as better answer to the outside system >
+          printfn "[d ]: Q&A: found better answer!"
+          
+          c.questions.[iQuestionIdx].bestSolution <- Some judgmentSentence
