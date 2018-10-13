@@ -1,4 +1,7 @@
-// TODO< attention machnism >
+// TODO< refactor Q&A mess >
+// TODO< add questions to tasks for new questions >
+
+// TODO< attention mechanism >
 // TODO< overhaul attention echnaism to use counter >
 // TODO< bias system to favor to forget tasks with complex sentences >
 
