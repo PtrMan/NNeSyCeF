@@ -79,10 +79,19 @@
 
 
 
-      let subjectTerm = derefTermByAddress2 subjectAddress
-      let predicateTerm = derefTermByAddress2 predicateAddress
+      let mutable subjectTerm = derefTermByAddress2 subjectAddress
+      let mutable predicateTerm = derefTermByAddress2 predicateAddress
+
+      if negateLeftPremise then
+        subjectTerm <- Term.Negation subjectTerm 
+      
+      if negateRightPremise then
+        predicateTerm <- Term.Negation predicateTerm 
     
-      let conclusionSentenceTerm = Term.Sentence(copula, subjectTerm, predicateTerm)
+      let mutable conclusionSentenceTerm = Term.Sentence(copula, subjectTerm, predicateTerm)
+
+      if negateConclusion then
+        conclusionSentenceTerm <- Term.Negation conclusionSentenceTerm
 
       let conclusionTruth = Truth.calcBinaryTruth truthFn leftTruth rightTruth
 
