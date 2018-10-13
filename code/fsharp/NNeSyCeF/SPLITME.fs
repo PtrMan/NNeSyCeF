@@ -272,13 +272,6 @@ module main
 
 
     
-    // used to simplify NAL-6 matching rules
-    let checkCopula1 a b =
-        match a, b with
-        | '|', '|' -> true
-        | '/', '/' -> true
-        | '\\', '\\' -> true
-        | _ -> false
   
     // ; implication-based syllogism
 
@@ -297,14 +290,22 @@ module main
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '=', '>', ' ') LEFTSUBJECT  "induction" "?" |]
     
         | Sentence((' ', '=', c0, '>', ' '), p, m0), Sentence((' ', '=', c1, '>', ' '), s, m1)
-          when m0 = m1 && s <> p && checkCopula1 c0 c1
+          when m0 = m1 && s <> p && c0 = c1 && (c0 = '|' || c0 = '/')
             ->
               (*
               #R[(P =|> M) (S =|> M) |- (S =|> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
               #R[(P =/> M) (S =/> M) |- (S =|> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
+              *)
+              derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '|', '>', ' ') LEFTSUBJECT  "induction" "?" |]
+        
+        | Sentence((' ', '=', '\\', '>', ' '), p, m0), Sentence((' ', '=', '\\', '>', ' '), s, m1)
+          when m0 = m1 && s <> p
+            ->
+              (*
               #R[(P =\> M) (S =\> M) |- (S =|> P) :post (:t/induction :allow-backward) :pre ((:!= S P))]
               *)
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTSUBJECT (' ', '=', '|', '>', ' ') LEFTSUBJECT  "induction" "?" |]
+    
     
 
         | Sentence((' ', '=', '=', '>', ' '), m0, p), Sentence((' ', '=', '=', '>', ' '), m1, s)
@@ -314,7 +315,7 @@ module main
               derived <- Array.append derived [| derivedSentence finalObservationCount premiseAStamp premiseBStamp left right  leftTruth rightTruth   RIGHTPREDICATE (' ', '=', '=', '>', ' ') LEFTPREDICATE  "abduction" "?" |]
 
         | Sentence((' ', '=', c0, '>', ' '), m0, p), Sentence((' ', '=', c1, '>', ' '), m1, s)
-          when m0 = m1 && s <> p && (c0 && c1 && (c0 = '/' || c0 = '|'))
+          when m0 = m1 && s <> p && (c0 = c1 && (c0 = '/' || c0 = '|'))
             ->
               (*
               #R[(M =/> P) (M =/> S) |- (S =|> P) :post (:t/abduction :allow-backward) :pre ((:!= S P))]
@@ -776,7 +777,7 @@ module main
 
     val mutable stampCounter : int64
     
-    val questionAnswerHandlers: (Concept -> Task -> unit)[]
+    val questionAnswerHandlers: (Concept -> DualSentence -> unit)[]
 
     new(taskSelectionAmount_:int,derivationFn_, questionAnswerHandlers_)={
       concepts = new ConceptPriorityQueue 50;
@@ -810,14 +811,14 @@ module main
       | _ -> ignore
     
     // calls Question answering handlers
-    member self.questionAnswering (belief:Task) =
-      let term = belief.sentence.termWithSdr.term
+    member self.questionAnswering (sentence:DualSentence) =
+      let term = sentence.termWithSdr.term
 
       match self.concepts.map_.TryGetValue term with
       | (True, iConcept) ->
       
         for iHandler in self.questionAnswerHandlers do
-          iHandler (iConcept) (belief)
+          iHandler (iConcept) (sentence)
         
         ignore
       | _ -> ignore
@@ -961,8 +962,12 @@ module main
               else
                 // normal inference
 
-                let thisderived = self.derivationFn task iBelief
-                derived.Add thisderived |>
+                let thisderivedTaskBelief = self.derivationFn task iBelief
+                derived.Add thisderivedTaskBelief
+                
+                let thisderivedBeliefTask = self.derivationFn iBelief task
+                derived.Add thisderivedBeliefTask
+                 |>
 
                 ignore
 
@@ -989,7 +994,7 @@ module main
 
             self.addJudgmentAsBeliefAndTask j.finalObservationCount sparseTerm j.truth j.stamp
             // try to answer questions with new belief
-            self.questionAnswering createdBelief
+            self.questionAnswering createdBelief.sentence
 
       let deriveTasks = match task.type_ with
       | JUDGMENT -> processJudgment()
@@ -1016,4 +1021,19 @@ module main
 
     r.addJudgmentAsBeliefAndTask (uint64 1) sentence.termWithSdr sentence.truth stamp
 
+    // try to answer questions with new belief
+    r.questionAnswering sentence
+
   
+
+  // standard Q&A handler
+  //
+  // /param c the concept which has the term of the task as a (sub)term
+  // /param judgmentSentence considered judgment
+  let defaultQuestionAndAnswerHandler (c:Concept) (judgmentSentence:DualSentence) =
+    
+    // just debug it
+    
+    printfn "Q&A"
+    printfn "term: %s" (convToString judgmentSentence.termWithSdr.term)
+    printfn "concept: %s" (convToString c.name.term)

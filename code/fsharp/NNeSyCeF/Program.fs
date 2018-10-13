@@ -12,15 +12,17 @@ let randomAlphanumericString() =
 [<EntryPoint>]
 let main argv = 
   
-  let r = new main.Reasoner(10, main.derive, [||])
+  let r = new main.Reasoner(10, main.derive, [|main.defaultQuestionAndAnswerHandler|])
 
-  for i in 0 .. 10000000 do
+  for i in 0 .. 2 do
 
     let sentence = Datastructures.DualSentence(Truth.Value(0.5f, 0.5f), Datastructures.SparseTerm(Sdr.zero, Term.Sentence((' ', '-', '-', '>', ' '), (Term.Name (randomAlphanumericString())), (Term.Name (randomAlphanumericString())))))
 
     main.addJudgement r sentence
   
     r.step
+
+    printfn "[i ] cycle=%d" i
 
   r.step
   r.step
