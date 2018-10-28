@@ -1048,7 +1048,7 @@ module main
     printfn "term: %s" (convToString judgmentSentence.termWithSdr.term)
     printfn "concept: %s" (convToString c.name.term)
     
-    for iQuestionIdx in 0..(Array.length c.questions) do
+    for iQuestionIdx in 0..(Array.length c.questions)-1 do
       let iQuestion = c.questions.[iQuestionIdx]
 
       if iQuestion.task.sentence.termWithSdr.term = judgmentSentence.termWithSdr.term then
