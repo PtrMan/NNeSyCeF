@@ -85,3 +85,11 @@ module Datastructures
       questions = [||]
     }
   end
+
+  // items for bags - a item has a priority
+  type Item = struct
+    val value : Task
+    val mutable priority : float
+    
+    new(value_, priority_) = {value=value_;priority=priority_}
+  end

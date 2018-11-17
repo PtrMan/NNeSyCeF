@@ -1,13 +1,6 @@
 ﻿module PseudoBag
   open Datastructures
-
-  type Item = struct
-    val value : Task
-    val mutable priority : float
-
-    new(value_, priority_) = {value=value_;priority=priority_}
-  end
-
+  
   type PseudoBag = struct
     val mutable items : Item[]
   end
